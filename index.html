@@ -2,6 +2,8 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#1C1C1B">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>The Factory — Calculadora</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -367,6 +369,136 @@ tbody td.cost  { text-align: right; font-weight: 600; }
     font-size: 11px; color: var(--muted); font-style: italic;
     margin-top: 12px; padding-top: 10px; border-top: 1px solid #f0f0f0;
   }
+
+
+/* ══════════════════════════════════════════════
+   RESPONSIVE — MOBILE
+══════════════════════════════════════════════ */
+@media (max-width: 768px) {
+
+  /* Nav bottom — bigger touch targets */
+  .nav { height: 64px; }
+  .nav-btn { font-size: 10px; padding: 6px 2px 12px; }
+  .nav-btn svg { width: 24px; height: 24px; }
+
+  /* Screens scroll with nav offset */
+  .screen { overflow-y: auto; }
+
+  /* Stack sidebar above main */
+  .screen-inner { flex-direction: column; height: auto; min-height: 100%; }
+
+  /* Sidebar becomes top panel */
+  .sidebar {
+    width: 100% !important;
+    min-width: 100% !important;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+    padding: 14px 14px 16px;
+    gap: 12px;
+  }
+
+  /* Main area padding */
+  .main { padding: 14px 14px 80px; }
+
+  /* Inputs bigger for touch */
+  .input-group input,
+  .input-group select {
+    font-size: 16px; /* prevents iOS zoom */
+    padding: 12px 12px;
+  }
+
+  /* Seg buttons bigger */
+  .seg-btn { padding: 11px 8px; font-size: 13px; }
+
+  /* Buttons */
+  .btn-calc { padding: 14px; font-size: 15px; }
+  .btn-reset, .btn-secondary { padding: 12px; font-size: 13px; }
+
+  /* Stat cards — single col on very small */
+  .summary-grid { grid-template-columns: 1fr 1fr; }
+  .stat-card.highlight { grid-column: span 2; }
+  .stat-value { font-size: 18px; }
+  .stat-card.highlight .stat-value { font-size: 24px; }
+
+  /* Tables — horizontal scroll */
+  .table-wrap, .tabla-wrap { overflow-x: auto; }
+  table { font-size: 11px; }
+  tbody td { padding: 6px 8px; }
+  thead th { padding: 6px 8px; font-size: 9px; }
+
+  /* Header */
+  .hdr { padding: 0 12px; height: 48px; }
+  .hdr-title { font-size: 14px; }
+  .pbtn { font-size: 10px; padding: 4px 10px; }
+
+  /* Cotización sidebar wider */
+  .screen-inner > aside[style*="width:300px"] {
+    width: 100% !important;
+    min-width: 100% !important;
+  }
+
+  /* Cot items */
+  .cot-item { flex-wrap: wrap; gap: 8px; }
+  .ci-total { font-size: 14px; }
+
+  /* Despiece */
+  .desp-row { padding: 10px 12px; }
+  .dr-pedir { font-size: 18px; }
+
+  /* Config panels */
+  .cfg-card { padding: 14px 12px; }
+  .cfg-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+
+  /* Formula table scroll */
+  .formula-section { padding: 14px 12px; overflow-x: auto; }
+  .formula-table { font-size: 11px; }
+  .formula-table td:first-child { width: 110px; }
+  .formula-table td:last-child { width: 100px; }
+
+  /* Config sidebar — horizontal tabs on mobile */
+  .screen-inner > aside.sidebar[style*="width:180px"] {
+    width: 100% !important;
+    min-width: 100% !important;
+    flex-direction: row !important;
+    flex-wrap: wrap;
+    gap: 6px !important;
+    padding: 10px 14px !important;
+    border-bottom: 1px solid var(--border);
+  }
+  .cfg-tab-btn {
+    flex: 1;
+    min-width: 80px;
+    text-align: center;
+    border-left: none !important;
+    border-bottom: 2px solid transparent;
+    border-radius: 6px;
+    padding: 8px 6px;
+    font-size: 12px;
+  }
+  .cfg-tab-btn.active {
+    border-left: none !important;
+    border-bottom-color: var(--accent);
+  }
+  #cfg-saved-toast { display: none; } /* hide in horiz layout */
+
+  /* Row2 stays 2-col on mobile (inputs are narrow enough) */
+  .row2 { grid-template-columns: 1fr 1fr; }
+  .row3 { grid-template-columns: 1fr 1fr; }
+
+  /* Section labels smaller */
+  .section-label { font-size: 9px; }
+
+  /* Tabla precios output header font */
+  .tabla-table thead th { font-size: 8px; padding: 5px 6px; }
+  .tabla-table tbody td { padding: 4px 6px; font-size: 10px; }
+}
+
+@media (max-width: 400px) {
+  .summary-grid { grid-template-columns: 1fr; }
+  .stat-card.highlight { grid-column: span 1; }
+  .seg-btn { font-size: 12px; padding: 10px 4px; }
+  .nav-btn { font-size: 9px; }
+}
 
 </style>
 </head>
@@ -1479,8 +1611,7 @@ function imprimirTabla() {
 
   const tableHTML = tablaEl.querySelector('table').outerHTML;
 
-  const win = window.open('','_blank');
-  win.document.write(`<!DOCTYPE html><html lang="es"><head>
+  imprimirHTML(`<!DOCTYPE html><html lang="es"><head>
 <meta charset="UTF-8"><title>Price Table — The Factory</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
@@ -1521,7 +1652,6 @@ ${tableHTML}
 <div class="footer">The Factory · windows and doors · ${fecha}</div>
 <script>window.onload=function(){window.print()}<\/script>
 </body></html>`);
-  win.document.close();
 }
 
 
@@ -2225,8 +2355,7 @@ function imprimirCotizacion() {
     <td style="text-align:right">${usd(it.unitario)}</td>
     <td style="text-align:right"><strong>${usd(it.total)}</strong></td>
   </tr>`).join('');
-  const win=window.open('','_blank');
-  win.document.write(`<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8">
+  imprimirHTML(`<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8">
 <title>${cotNum} — The Factory</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
@@ -2272,7 +2401,6 @@ ${notas?`<div class="notas"><strong style="display:block;margin-bottom:4px">Nota
 </div><!-- /main-area -->
 </div><!-- /app-shell -->
 </body></html>`);
-  win.document.close();
 
   // Auto-save to history
   const histSub = cotItems.reduce((s,i)=>s+i.total, 0);
@@ -2485,8 +2613,7 @@ function imprimirDespiece() {
       <td style="text-align:right">${tec}</td><td style="text-align:right">${costo}</td></tr>`;
   }).join('');
 
-  const win = window.open('','_blank');
-  win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Despiece</title>
+  imprimirHTML(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Despiece</title>
 <style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:Arial,sans-serif;font-size:11px;padding:16px}
 .hdr{display:flex;justify-content:space-between;border-bottom:3px solid #EC5F29;padding-bottom:10px;margin-bottom:12px}
 h1{font-size:16px;font-weight:900}p{font-size:10px;color:#888}
@@ -2504,7 +2631,6 @@ tfoot td{padding:8px;font-weight:700;background:#EC5F29;color:#fff}tfoot td.r{te
 <tfoot><tr><td colspan="5">TOTAL COSTO MATERIALES</td><td class="r">${total}</td></tr></tfoot></table>
 <div style="text-align:center;font-size:9px;color:#aaa;border-top:1px solid #eee;padding-top:8px;margin-top:12px">The Factory · ${fecha}</div>
 <script>window.onload=function(){window.print()}<\/script></body></html>`);
-  win.document.close();
 }
 
 // ── CONFIGURACIÓN GLOBAL ───────────────────────────────────────
@@ -3338,6 +3464,21 @@ function renderFormula(tipo) {
 }
 
 // goTo override merged into main goTo
+
+
+// ── PRINT HELPER (mobile-safe) ───────────────────────────────
+function imprimirHTML(html) {
+  const blob = new Blob([html], {type: 'text/html'});
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href     = url;
+  a.target   = '_blank';
+  a.rel      = 'noopener';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 30000);
+}
 
 // ── INIT ──────────────────────────────────────────────────────
 window.addEventListener('DOMContentLoaded', () => {
