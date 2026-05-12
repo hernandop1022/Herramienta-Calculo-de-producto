@@ -197,7 +197,7 @@ hr{border:none;border-top:1px solid var(--border);margin:10px 0}
         <div class="ig"><label>Alto (")</label><input type="text" id="calc-alto" inputmode="text" value="16 3/4"  oninput="calcAutoHojas()"><span class="hint" id="calc-alto-hint"></span></div>
         <div class="ig"><label>Ancho (")</label><input type="text" id="calc-ancho" inputmode="text" value="36" ><span class="hint" id="calc-ancho-hint"></span></div>
       </div>
-      <div class="ig"><label>Louvers (auto)</label><input type="number" id="calc-hojas" value="5" readonly style="opacity:.6"></div>
+      <div class="ig"><label>Louvers (auto)</label><input type="text" inputmode="text" id="calc-hojas" value="5" readonly style="opacity:.6"></div>
     </div>
   </div>
 
@@ -268,23 +268,23 @@ hr{border:none;border-top:1px solid var(--border);margin:10px 0}
       </div>
       <input type="hidden" id="t-tamHoja" value="3">
       <div class="r2" style="margin-bottom:8px">
-        <div class="ig"><label>Louver ini</label><input type="number" id="t-lini" value="2" min="1"></div>
-        <div class="ig"><label>Louver fin</label><input type="number" id="t-lfin" value="16" min="1"></div>
+        <div class="ig"><label>Louver ini</label><input type="text" inputmode="text" id="t-lini" value="2" min="1"></div>
+        <div class="ig"><label>Louver fin</label><input type="text" inputmode="text" id="t-lfin" value="16" min="1"></div>
       </div>
       <div class="r2">
-        <div class="ig"><label>Ancho ini (")</label><input type="number" id="t-aini" value="18" step="6"></div>
-        <div class="ig"><label>Ancho fin (")</label><input type="number" id="t-afin" value="36" step="6"></div>
+        <div class="ig"><label>Ancho ini (")</label><input type="text" inputmode="text" id="t-aini" value="18" step="6"></div>
+        <div class="ig"><label>Ancho fin (")</label><input type="text" inputmode="text" id="t-afin" value="36" step="6"></div>
       </div>
     </div>
 
     <div id="t-opts-proyectante" style="display:none">
       <div class="r2" style="margin-bottom:8px">
-        <div class="ig"><label>Alto ini (")</label><input type="number" id="t-vp-aini" value="14" step="2"></div>
-        <div class="ig"><label>Alto fin (")</label><input type="number" id="t-vp-afin" value="24" step="2"></div>
+        <div class="ig"><label>Alto ini (")</label><input type="text" inputmode="text" id="t-vp-aini" value="14" step="2"></div>
+        <div class="ig"><label>Alto fin (")</label><input type="text" inputmode="text" id="t-vp-afin" value="24" step="2"></div>
       </div>
       <div class="r2">
-        <div class="ig"><label>Ancho ini (")</label><input type="number" id="t-vp-wini" value="18" step="2"></div>
-        <div class="ig"><label>Ancho fin (")</label><input type="number" id="t-vp-wfin" value="30" step="2"></div>
+        <div class="ig"><label>Ancho ini (")</label><input type="text" inputmode="text" id="t-vp-wini" value="18" step="2"></div>
+        <div class="ig"><label>Ancho fin (")</label><input type="text" inputmode="text" id="t-vp-wfin" value="30" step="2"></div>
       </div>
     </div>
 
@@ -335,7 +335,7 @@ hr{border:none;border-top:1px solid var(--border);margin:10px 0}
           <option value="black">Black</option>
         </select>
       </div>
-      <div class="ig"><label>Cantidad</label><input type="number" id="cot-qty" value="1" min="1"></div>
+      <div class="ig"><label>Cantidad</label><input type="text" inputmode="text" id="cot-qty" value="1" min="1"></div>
     </div>
     <div class="r2" style="margin-bottom:8px">
       <div class="ig"><label>Alto (")</label><input type="text" id="cot-alto" inputmode="text" value="16 3/4"  oninput="cotAutoHojas()"><span class="hint" id="cot-alto-hint"></span></div>
@@ -348,7 +348,7 @@ hr{border:none;border-top:1px solid var(--border);margin:10px 0}
       <button class="seg-btn"        data-val="4" onclick="selC(this,'cot-hoja');cotAutoHojas()">4"</button>
       <button class="seg-btn"        data-val="6" onclick="selC(this,'cot-hoja');cotAutoHojas()">6"</button>
     </div>
-    <div class="ig" style="margin-bottom:12px"><label>Louvers (auto)</label><input type="number" id="cot-hojas" value="5" readonly style="opacity:.6"></div>
+    <div class="ig" style="margin-bottom:12px"><label>Louvers (auto)</label><input type="text" inputmode="text" id="cot-hojas" value="5" readonly style="opacity:.6"></div>
     </div>
     <input type="hidden" id="cot-hoja" value="3">
     <input type="hidden" id="cot-margen" value="50">
@@ -409,33 +409,33 @@ hr{border:none;border-top:1px solid var(--border);margin:10px 0}
   <div class="card">
     <div class="card-lbl">Márgenes</div>
     <div class="r2" style="margin-bottom:10px">
-      <div class="ig"><label>Público (%)</label><input type="number" id="cfg-margen-pub2" value="50" step="5" oninput="guardarConfigUI()"></div>
-      <div class="ig"><label>Ferretería (%)</label><input type="number" id="cfg-margen-fer2" value="40" step="5" oninput="guardarConfigUI()"></div>
+      <div class="ig"><label>Público (%)</label><input type="text" inputmode="text" id="cfg-margen-pub2" value="50" step="5" oninput="guardarConfigUI()"></div>
+      <div class="ig"><label>Ferretería (%)</label><input type="text" inputmode="text" id="cfg-margen-fer2" value="40" step="5" oninput="guardarConfigUI()"></div>
     </div>
     <div class="ig"><label>Validez cotización</label><input type="text" id="cfg-validez2" value="15 días" oninput="guardarConfigUI()"></div>
   </div>
   <div class="card">
     <div class="card-lbl">Celosía — WI</div>
     <div class="r2" style="margin-bottom:8px">
-      <div class="ig"><label>Arbitrio (%)</label><input type="number" id="cfg-arb2" value="10" step="0.5" oninput="guardarConfigUI()"></div>
-      <div class="ig"><label>M.O. ($)</label><input type="number" id="cfg-mdo-wi2" value="9.50" step="0.5" oninput="guardarConfigUI()"></div>
+      <div class="ig"><label>Arbitrio (%)</label><input type="text" inputmode="text" id="cfg-arb2" value="10" step="0.5" oninput="guardarConfigUI()"></div>
+      <div class="ig"><label>M.O. ($)</label><input type="text" inputmode="text" id="cfg-mdo-wi2" value="9.50" step="0.5" oninput="guardarConfigUI()"></div>
     </div>
-    <div class="ig"><label>CIF ($)</label><input type="number" id="cfg-cadd2" value="1.00" step="0.5" oninput="guardarConfigUI()"></div>
+    <div class="ig"><label>CIF ($)</label><input type="text" inputmode="text" id="cfg-cadd2" value="1.00" step="0.5" oninput="guardarConfigUI()"></div>
   </div>
   <div class="card">
     <div class="card-lbl">Celosía — Screen</div>
     <div class="r2">
-      <div class="ig"><label>Arbitrio (%)</label><input type="number" id="cfg-arb-sc2" value="10" step="0.5" oninput="guardarConfigUI()"></div>
-      <div class="ig"><label>M.O. ($)</label><input type="number" id="cfg-mdo-sc2" value="2.92" step="0.5" oninput="guardarConfigUI()"></div>
+      <div class="ig"><label>Arbitrio (%)</label><input type="text" inputmode="text" id="cfg-arb-sc2" value="10" step="0.5" oninput="guardarConfigUI()"></div>
+      <div class="ig"><label>M.O. ($)</label><input type="text" inputmode="text" id="cfg-mdo-sc2" value="2.92" step="0.5" oninput="guardarConfigUI()"></div>
     </div>
   </div>
   <div class="card">
     <div class="card-lbl">Proyectante</div>
     <div class="r2" style="margin-bottom:8px">
-      <div class="ig"><label>Arbitrio (%)</label><input type="number" id="cfg-vp-arb2" value="11" step="0.5" oninput="guardarConfigUI()"></div>
-      <div class="ig"><label>M.O. ($)</label><input type="number" id="cfg-vp-mdo2" value="65" step="1" oninput="guardarConfigUI()"></div>
+      <div class="ig"><label>Arbitrio (%)</label><input type="text" inputmode="text" id="cfg-vp-arb2" value="11" step="0.5" oninput="guardarConfigUI()"></div>
+      <div class="ig"><label>M.O. ($)</label><input type="text" inputmode="text" id="cfg-vp-mdo2" value="65" step="1" oninput="guardarConfigUI()"></div>
     </div>
-    <div class="ig"><label>CIF ($)</label><input type="number" id="cfg-vp-cadd2" value="1.00" step="0.5" oninput="guardarConfigUI()"></div>
+    <div class="ig"><label>CIF ($)</label><input type="text" inputmode="text" id="cfg-vp-cadd2" value="1.00" step="0.5" oninput="guardarConfigUI()"></div>
   </div>
   <div class="card">
     <div class="card-lbl">Backup</div>
@@ -2765,7 +2765,7 @@ function renderBDMobile() {
       </div>
       <div style="display:flex;align-items:center;gap:6px">
         <span style="font-size:10px;color:var(--muted)">$</span>
-        <input type="number" step="0.0001"
+        <input type="text" inputmode="text" step="0.0001"
           value="${(PRECIOS[item.ref]||0).toFixed(4)}"
           style="width:80px;background:var(--inp);border:1px solid var(--border);border-radius:6px;padding:6px 8px;font-family:'DM Mono',monospace;font-size:13px;text-align:right"
           onchange="actualizarPrecio('${item.ref}', this.value)">
