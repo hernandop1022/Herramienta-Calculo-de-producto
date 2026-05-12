@@ -194,8 +194,8 @@ hr{border:none;border-top:1px solid var(--border);margin:10px 0}
       <input type="hidden" id="calc-hoja" value="3">
 
       <div class="r2" style="margin-bottom:10px">
-        <div class="ig"><label>Alto (")</label><input type="text" id="calc-alto" value="16 3/4" inputmode="decimal" oninput="calcAutoHojas()"><span class="hint" id="calc-alto-hint"></span></div>
-        <div class="ig"><label>Ancho (")</label><input type="text" id="calc-ancho" value="36" inputmode="decimal"><span class="hint" id="calc-ancho-hint"></span></div>
+        <div class="ig"><label>Alto (")</label><input type="text" id="calc-alto" inputmode="text" value="16 3/4"  oninput="calcAutoHojas()"><span class="hint" id="calc-alto-hint"></span></div>
+        <div class="ig"><label>Ancho (")</label><input type="text" id="calc-ancho" inputmode="text" value="36" ><span class="hint" id="calc-ancho-hint"></span></div>
       </div>
       <div class="ig"><label>Louvers (auto)</label><input type="number" id="calc-hojas" value="5" readonly style="opacity:.6"></div>
     </div>
@@ -205,8 +205,8 @@ hr{border:none;border-top:1px solid var(--border);margin:10px 0}
     <div class="card">
       <div class="card-lbl" style="margin-bottom:10px">Dimensiones</div>
       <div class="r2">
-        <div class="ig"><label>Alto (")</label><input type="text" id="vp-alto" value="19" inputmode="decimal"></div>
-        <div class="ig"><label>Ancho (")</label><input type="text" id="vp-ancho" value="23" inputmode="decimal"></div>
+        <div class="ig"><label>Alto (")</label><input type="text" id="vp-alto" inputmode="text" value="19" ></div>
+        <div class="ig"><label>Ancho (")</label><input type="text" id="vp-ancho" inputmode="text" value="23" ></div>
       </div>
     </div>
   </div>
@@ -320,7 +320,7 @@ hr{border:none;border-top:1px solid var(--border);margin:10px 0}
   <div class="card">
     <div class="card-lbl">Agregar producto</div>
     <div class="ig" style="margin-bottom:8px"><label>Tipo</label>
-      <select id="cot-tipo">
+      <select id="cot-tipo" onchange="toggleCotOpts(this.value)">
         <option value="ws-glass">Celosía Glass + Screen</option>
         <option value="ws-solid">Celosía Solid + Screen</option>
         <option value="vp">Ventana Proyectante</option>
@@ -338,19 +338,21 @@ hr{border:none;border-top:1px solid var(--border);margin:10px 0}
       <div class="ig"><label>Cantidad</label><input type="number" id="cot-qty" value="1" min="1"></div>
     </div>
     <div class="r2" style="margin-bottom:8px">
-      <div class="ig"><label>Alto (")</label><input type="text" id="cot-alto" value="16 3/4" inputmode="decimal" oninput="cotAutoHojas()"><span class="hint" id="cot-alto-hint"></span></div>
-      <div class="ig"><label>Ancho (")</label><input type="text" id="cot-ancho" value="36" inputmode="decimal"><span class="hint" id="cot-ancho-hint"></span></div>
+      <div class="ig"><label>Alto (")</label><input type="text" id="cot-alto" inputmode="text" value="16 3/4"  oninput="cotAutoHojas()"><span class="hint" id="cot-alto-hint"></span></div>
+      <div class="ig"><label>Ancho (")</label><input type="text" id="cot-ancho" inputmode="text" value="36" ><span class="hint" id="cot-ancho-hint"></span></div>
     </div>
+    <div id="cot-louver-opts">
     <div class="card-lbl" style="margin-bottom:8px">Louver</div>
     <div class="seg-row" style="margin-bottom:10px">
       <button class="seg-btn active" data-val="3" onclick="selC(this,'cot-hoja');cotAutoHojas()">3"</button>
       <button class="seg-btn"        data-val="4" onclick="selC(this,'cot-hoja');cotAutoHojas()">4"</button>
       <button class="seg-btn"        data-val="6" onclick="selC(this,'cot-hoja');cotAutoHojas()">6"</button>
     </div>
+    <div class="ig" style="margin-bottom:12px"><label>Louvers (auto)</label><input type="number" id="cot-hojas" value="5" readonly style="opacity:.6"></div>
+    </div>
     <input type="hidden" id="cot-hoja" value="3">
     <input type="hidden" id="cot-margen" value="50">
     <input type="hidden" id="cot-num" value="">
-    <div class="ig" style="margin-bottom:12px"><label>Louvers (auto)</label><input type="number" id="cot-hojas" value="5" readonly style="opacity:.6"></div>
     <button class="btn-main" onclick="agregarItemCot()">+ Agregar</button>
   </div>
 
@@ -443,6 +445,31 @@ hr{border:none;border-top:1px solid var(--border);margin:10px 0}
       <input type="file" accept=".json" style="display:none" onchange="importarConfig(this)">
     </label>
   </div>
+  <!-- BD + FÓRMULAS con toggle -->
+  <div class="card">
+    <div class="seg-row" style="margin-bottom:16px">
+      <button class="seg-btn active" id="tab-bd-btn"  onclick="switchCfgSection('bd')">📦 Materiales</button>
+      <button class="seg-btn"        id="tab-fml-btn" onclick="switchCfgSection('formulas')">📐 Fórmulas</button>
+    </div>
+
+    <!-- BD Materiales -->
+    <div id="cfg-section-bd">
+      <div style="font-size:11px;color:var(--muted);margin-bottom:10px">Toca cualquier precio para editarlo. Se guarda automáticamente.</div>
+      <div id="bd-list"></div>
+    </div>
+
+    <!-- Fórmulas -->
+    <div id="cfg-section-formulas" style="display:none">
+      <div class="seg-row" style="margin-bottom:14px">
+        <button class="seg-btn active" data-val="celosia-glass" onclick="selFormulaMob(this)">🪟 Glass</button>
+        <button class="seg-btn"        data-val="celosia-solid" onclick="selFormulaMob(this)">▪ Solid</button>
+        <button class="seg-btn"        data-val="mosquitero"    onclick="selFormulaMob(this)">🕸 Screen</button>
+        <button class="seg-btn"        data-val="proyectante"   onclick="selFormulaMob(this)">🔲 VP</button>
+      </div>
+      <div id="formula-mob-content"></div>
+    </div>
+  </div>
+
   <div class="toast" id="cfg-saved-toast">✓ Guardado</div>
 </div>
 
@@ -1113,16 +1140,17 @@ body{font-family:Arial,sans-serif;font-size:10px;color:#1C1C1B;padding:12px 16px
 .hdr-fecha{font-size:9px;color:#aaa;margin-top:2px}
 table{width:100%;border-collapse:collapse;font-size:9px}
 thead th{background:#1C1C1B;color:#fff;padding:5px 6px;text-align:center;border:1px solid #333;font-size:8px;letter-spacing:.5px}
-thead th.wo{background:#EC5F29}
-thead th.wg{background:#777}
-thead th.wgr{background:#2a7a2a}
-thead th.wrd{background:#880000}
+thead th.wo{background:#EC5F29 !important;color:#fff}
+thead th.wg{background:#777 !important;color:#fff}
+thead th.wgr{background:#2a7a2a !important;color:#fff}
+thead th.wrd{background:#880000 !important;color:#fff}
 tbody tr:nth-child(odd) td{background:#f5f5f5}
 tbody tr:nth-child(even) td{background:#fff}
 tbody td{padding:4px 6px;border:1px solid #ddd;text-align:right}
-tbody td.lv{background:#1C1C1B!important;color:#fff;font-weight:700;text-align:center}
+tbody td.lv{background:#1C1C1B !important;color:#fff !important;font-weight:700;text-align:center}
 tbody td.ht{text-align:center;color:#555}
-tbody td.ws{font-weight:700;color:#1C1C1B}
+tbody td.ws{font-weight:700;color:#EC5F29}
+.tabla-table{border-collapse:collapse;width:100%}
 .footer{margin-top:10px;font-size:8px;color:#aaa;text-align:right;border-top:1px solid #eee;padding-top:4px}
 @media print{@page{margin:.8cm;size:landscape}body{padding:6px 10px}}
 </style></head><body>
@@ -2106,20 +2134,16 @@ function guardarConfig() {
 
 
 function setPrecioTipo(tipo) {
-  // Update header buttons
   const pub = document.getElementById('hdr-pub');
   const fer = document.getElementById('hdr-fer');
-  if (tipo === 'publico') {
-    pub.style.cssText = "font-family:'Syne',sans-serif;font-weight:700;font-size:11px;padding:6px 14px;border-radius:20px;border:2px solid #2a7a2a;background:#2a7a2a;color:#fff;cursor:pointer;";
-    fer.style.cssText = "font-family:'Syne',sans-serif;font-weight:700;font-size:11px;padding:6px 14px;border-radius:20px;border:2px solid #aaa;background:transparent;color:#888;cursor:pointer;";
-  } else {
-    fer.style.cssText = "font-family:'Syne',sans-serif;font-weight:700;font-size:11px;padding:6px 14px;border-radius:20px;border:2px solid #cc0000;background:#cc0000;color:#fff;cursor:pointer;";
-    pub.style.cssText = "font-family:'Syne',sans-serif;font-weight:700;font-size:11px;padding:6px 14px;border-radius:20px;border:2px solid #aaa;background:transparent;color:#888;cursor:pointer;";
-  }
-  // Update CFG
+  if (pub) pub.classList.toggle('active', tipo === 'publico');
+  if (fer) fer.classList.toggle('active', tipo === 'ferreteria');
   CFG.cotMargenDef = tipo;
-  try { localStorage.setItem(CONFIG_KEY, JSON.stringify(CFG)); } catch(e) {}
-  // Sync correct margen to all tabs
+  // Update margen hidden input used by calc functions
+  const margenPct = tipo === 'ferreteria' ? CFG.margenFer : CFG.margenPub;
+  const margenEl = document.getElementById('cot-margen');
+  if (margenEl) margenEl.value = margenPct;
+  try { localStorage.setItem('thefactory_config', JSON.stringify(CFG)); } catch(e) {}
   syncConfigToTabs();
 }
 
@@ -2364,13 +2388,14 @@ function generarTablaPrecios() {
   louvers.forEach(lv => {
     const alto = lv * tamHoja + 1.75;
     html += `<tr><td class="lv">${lv}</td><td class="ht">${toFrac(alto)}</td>`;
-    anchos.forEach(ancho => {
+    anchos.forEach((ancho, ai) => {
       const wi = relleno === 'solid'
         ? calcWISolid(alto, ancho, lv, tamHoja, margen, arb, mdo, cadd, color)
         : calcWI(alto, ancho, lv, tamHoja, margen, arb, mdo, cadd, color);
       const sc = calcScreen(alto,ancho,margen,arbSC,mdoSC,cadd);
       const ws = wi+sc;
-      html += `<td>${wi.toFixed(2)}</td><td>${sc.toFixed(2)}</td><td class="ws"><b>${ws.toFixed(2)}</b></td>`;
+      const bg = ai%2===0 ? 'background:#fff3ee;' : 'background:#f0f0f0;';
+      html += `<td style="${bg}">${wi.toFixed(2)}</td><td style="${bg}">${sc.toFixed(2)}</td><td style="${bg}font-weight:700;color:#EC5F29">${ws.toFixed(2)}</td>`;
     });
     html += '</tr>';
   });
@@ -2410,11 +2435,11 @@ function generarTablaPreciosVP() {
 
   altos.forEach(alto => {
     html += `<tr><td class="lv" style="position:sticky;left:0;background:#1C1C1B;color:#fff;font-weight:700">${alto}"</td>`;
-    anchos.forEach(ancho => {
+    anchos.forEach((ancho, ai) => {
       const pub = calcPrecioVP(alto, ancho, margenPub);
       const fer = calcPrecioVP(alto, ancho, margenFer);
-      html += `<td style="text-align:right">${pub.toFixed(2)}</td>
-               <td style="text-align:right;color:#cc0000">${fer.toFixed(2)}</td>`;
+      const bg = ai%2===0 ? 'background:#fff3ee;' : 'background:#f0f0f0;';
+      html += `<td style="${bg}text-align:right">${pub.toFixed(2)}</td><td style="${bg}text-align:right;color:#cc0000">${fer.toFixed(2)}</td>`;
     });
     html += '</tr>';
   });
@@ -2706,6 +2731,156 @@ function imprimirHTML(html) {
 
 
 
+
+
+
+// ── CFG SECTION TOGGLE ────────────────────────────────────────
+function switchCfgSection(section) {
+  const bd  = document.getElementById('cfg-section-bd');
+  const fml = document.getElementById('cfg-section-formulas');
+  const btnBD  = document.getElementById('tab-bd-btn');
+  const btnFml = document.getElementById('tab-fml-btn');
+  if (section === 'bd') {
+    bd.style.display='block'; fml.style.display='none';
+    btnBD.classList.add('active'); btnFml.classList.remove('active');
+  } else {
+    bd.style.display='none'; fml.style.display='block';
+    btnBD.classList.remove('active'); btnFml.classList.add('active');
+    renderFormulaMob('celosia-glass');
+    // Reset formula selector
+    document.querySelectorAll('#cfg-section-formulas .seg-btn').forEach((b,i)=>b.classList.toggle('active',i===0));
+  }
+}
+
+// ── BD MATERIALES (mobile) ────────────────────────────────────
+function renderBDMobile() {
+  const el = document.getElementById('bd-list');
+  if (!el) return;
+  el.innerHTML = BD_CENTRAL.map(item => `
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #eee">
+      <div>
+        <div style="font-size:11px;font-weight:700;color:var(--accent)">${item.ref}</div>
+        <div style="font-size:12px">${item.nombre}</div>
+        <div style="font-size:10px;color:var(--muted)">${item.unidad}</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px">
+        <span style="font-size:10px;color:var(--muted)">$</span>
+        <input type="number" step="0.0001"
+          value="${(PRECIOS[item.ref]||0).toFixed(4)}"
+          style="width:80px;background:var(--inp);border:1px solid var(--border);border-radius:6px;padding:6px 8px;font-family:'DM Mono',monospace;font-size:13px;text-align:right"
+          onchange="actualizarPrecio('${item.ref}', this.value)">
+      </div>
+    </div>`).join('');
+}
+
+function actualizarPrecio(ref, val) {
+  const v = parseFloat(val);
+  if (isNaN(v) || v < 0) return;
+  PRECIOS[ref] = v;
+  // Save to localStorage
+  try {
+    const saved = JSON.parse(localStorage.getItem('thefactory_config')||'{}');
+    if (!saved.precios) saved.precios = {};
+    saved.precios[ref] = v;
+    localStorage.setItem('thefactory_config', JSON.stringify(saved));
+  } catch(e) {}
+  const t = document.getElementById('cfg-saved-toast');
+  if(t){t.style.opacity='1';setTimeout(()=>t.style.opacity='0',1200);}
+}
+
+// ── FÓRMULAS (mobile) ─────────────────────────────────────────
+function selFormulaMob(btn) {
+  btn.closest('.seg-row').querySelectorAll('.seg-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderFormulaMob(btn.dataset.val);
+}
+
+function renderFormulaMob(tipo) {
+  const el = document.getElementById('formula-mob-content');
+  if (!el) return;
+  const E = { alto:16.75, ancho:36, tamHoja:3, louvers:5 };
+  const n = v => typeof v==='number' ? (Number.isInteger(v)?v:v.toFixed(4)) : v;
+
+  const row = (mat, formula, ejemplo) =>
+    `<div style="padding:7px 0;border-bottom:1px solid #f0f0f0">
+      <div style="display:flex;justify-content:space-between;align-items:start;gap:8px">
+        <div style="font-family:'DM Mono',monospace;font-size:11px;font-weight:700;color:var(--accent);flex-shrink:0;width:90px">${mat}</div>
+        <div style="font-size:11px;color:#333;flex:1">${formula}</div>
+        <div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);flex-shrink:0;text-align:right">=${n(ejemplo)}</div>
+      </div>
+    </div>`;
+
+  const {alto,ancho,tamHoja,louvers} = E;
+  const hs=ancho-2.5, gbu=hs-0.125;
+  const ops=Math.ceil(louvers/7);
+  const tb=((alto-2)*2)+((ops*2)*4);
+  const gft=((gbu-0.125)/12)*(tamHoja/12)*louvers;
+  const ax=(gbu+0.875)*louvers, rb=alto*2;
+  const ws_v=(ax/louvers)*(louvers+2), sil=hs+(tamHoja*2)*louvers;
+  const mdoAj=CFG.wi.mdoWI+(ops-1)*1;
+
+  const examples = `<div style="font-size:10px;color:var(--muted);margin-bottom:10px;background:#f5f5f5;padding:8px;border-radius:6px">
+    Ejemplo: ${alto}" Alto × ${ancho}" Ancho · ${tamHoja}" louver · ${louvers} louvers</div>`;
+
+  if (tipo === 'celosia-glass') {
+    el.innerHTML = examples +
+      row('Head/Sill', 'ancho − 2.5"', hs) +
+      row('Glass Blade', 'Head − 0.125"', gbu) +
+      row('Glass total', 'GBu × louvers', gbu*louvers) +
+      row('Operators', 'ceil(louvers / 7)', ops) +
+      row('Travel Bar', '(alto−2)×2 + (ops×2)×4', tb) +
+      row('Glass (ft²)', '((GBu−0.125)/12)×(tam/12)×L', gft.toFixed(4)) +
+      row('Axis', '(GBu + 0.875) × louvers', ax) +
+      row('Reversing Bar', 'alto × 2', rb) +
+      row('Weather Strip', '(axis/louvers) × (louvers+2)', ws_v.toFixed(3)) +
+      row('Silicon', 'Head + (tam×2) × louvers', sil) +
+      row('M.O. ajustada', 'M.O.base + (ops−1) × $1', `$${mdoAj.toFixed(2)}`);
+
+  } else if (tipo === 'celosia-solid') {
+    el.innerHTML = examples +
+      row('Head/Sill', 'ancho − 2.5"', hs) +
+      row('Solid Blade', 'ancho × louvers', ancho*louvers) +
+      row('Axis', '(GBu + 0.875) × louvers', ax) +
+      row('Travel Bar', '(alto−2)×2 + (ops×2)×4', tb) +
+      row('Weather Strip', '(axis/louvers) × (louvers+2)', ws_v.toFixed(3)) +
+      row('Silicon', 'Head + (tam×2) × louvers', sil) +
+      `<div style="margin-top:10px;font-size:10px;color:var(--muted);font-style:italic">
+        ✅ Solid usa MPW25 en lugar de Glass Blade + vidrio (MPW02)</div>`;
+
+  } else if (tipo === 'mosquitero') {
+    const lat=(ancho*2)+(alto*2);
+    el.innerHTML = examples +
+      row('Perfiles (MPW19)', '(ancho×2) + (alto×2)', lat) +
+      row('Perfil Central (MPW20)', 'ancho × 1', ancho) +
+      row('Tela (auto)', '≤24"→MPW21  ≤30"→MPW22  >30"→MPW23', ancho<=24?'MPW21':ancho<=30?'MPW22':'MPW23') +
+      row('Tela longitud', 'alto × 1', alto) +
+      row('Stiffener (MPW24)', '4 unidades fijas', 4);
+
+  } else if (tipo === 'proyectante') {
+    const vp01=((19-6)*2)+((23-6)*2), vp02=((19-6)*2)+(23*2);
+    el.innerHTML = `<div style="font-size:10px;color:var(--muted);margin-bottom:10px;background:#f5f5f5;padding:8px;border-radius:6px">
+      Ejemplo: 19" Alto × 23" Ancho</div>` +
+      row('VP01 Int. (IN)', '(alto−6)×2 + (ancho−6)×2', vp01) +
+      row('VP02 Ext. (IN)', '(alto−6)×2 + ancho×2', vp02) +
+      row('VP03 Bisagras', '1 PAR fijo', 1) +
+      row('VP04 Vidrio', '1 UNIDAD fija', 1) +
+      row('VP05 Silicona', '1 UNIDAD fija', 1) +
+      row('VP06 Herrería', '1 UNIDAD fija', 1) +
+      row('VP07 Glass Adapt.', 'igual a VP01', vp01) +
+      `<div style="margin-top:10px;font-size:10px;color:var(--muted);font-style:italic">
+        ⚙ VP01 y VP07 tienen la misma longitud. M.O. = $${CFG.vp.mdo} fijo.</div>`;
+  }
+}
+
+// ── TOGGLE COT OPTIONS BY TIPO ────────────────────────────────
+function toggleCotOpts(tipo) {
+  const louverOpts = document.getElementById('cot-louver-opts');
+  const altoAncho  = document.getElementById('cot-alto').closest('.r2');
+  const needLouver = tipo === 'ws-glass' || tipo === 'ws-solid';
+  const needDims   = tipo !== 'screen'; // screen only needs dims, no louver
+  if (louverOpts) louverOpts.style.display = needLouver ? '' : 'none';
+}
+
 // ── MOBILE NAV ───────────────────────────────────────────────
 function goTo(id, btn) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
@@ -2713,7 +2888,7 @@ function goTo(id, btn) {
   const scr = document.getElementById('scr-' + id);
   if (scr) scr.classList.add('active');
   if (btn) btn.classList.add('active');
-  if (id === 'cfg') initConfigUI();
+  if (id === 'cfg') { initConfigUI(); renderBDMobile(); renderFormulaMob('celosia-glass'); }
   if (id === 'cot') renderHistCot();
 }
 
@@ -2899,7 +3074,7 @@ function calcularUnificado() {
   const tamHoja=parseFloat((document.getElementById('calc-hoja') ||{}).value)||3;
   if(!alto||!ancho||!hojas){alert('Ingresa alto y ancho.');return;}
 
-  const margen=CFG.margenPub/100||0.5;
+  const margen=(CFG.cotMargenDef==='ferreteria' ? CFG.margenFer : CFG.margenPub)/100||0.5;
   const arb=CFG.wi.arb/100||0.10;
   const mdo=CFG.wi.mdoWI||9.5;
   const cadd=CFG.wi.cadd||1;
@@ -2952,7 +3127,7 @@ function calcularProyectante() {
   const alto =parseFrac((document.getElementById('vp-alto') ||{}).value||'19');
   const ancho=parseFrac((document.getElementById('vp-ancho')||{}).value||'23');
   if(!alto||!ancho){alert('Ingresa dimensiones.');return;}
-  const margen=CFG.margenPub/100||0.5;
+  const margen=(CFG.cotMargenDef==='ferreteria' ? CFG.margenFer : CFG.margenPub)/100||0.5;
   const pv=calcPrecioVP(alto,ancho,margen);
   const usd=v=>`$${v.toFixed(2)}`;
   const mats=calcMatVP(alto,ancho,1);
