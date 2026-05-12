@@ -140,6 +140,12 @@ tbody td.cost{text-align:right;font-weight:600}
 .toast{background:#e0f0e0;border-radius:8px;padding:8px 12px;font-size:12px;font-weight:600;color:var(--green);text-align:center;opacity:0;transition:opacity .3s;margin-top:8px}
 
 hr{border:none;border-top:1px solid var(--border);margin:10px 0}
+
+  /* iOS keyboard fix */
+  input[inputmode="text"] {
+    -webkit-text-security: none;
+  }
+
 </style>
 </head>
 <body>
@@ -194,8 +200,8 @@ hr{border:none;border-top:1px solid var(--border);margin:10px 0}
       <input type="hidden" id="calc-hoja" value="3">
 
       <div class="r2" style="margin-bottom:10px">
-        <div class="ig"><label>Alto (")</label><input type="text" id="calc-alto" inputmode="text" value="16 3/4"  oninput="calcAutoHojas()"><span class="hint" id="calc-alto-hint"></span></div>
-        <div class="ig"><label>Ancho (")</label><input type="text" id="calc-ancho" inputmode="text" value="36" ><span class="hint" id="calc-ancho-hint"></span></div>
+        <div class="ig"><label>Alto (")</label><input type="text" id="calc-alto" inputmode="text" autocomplete="off" placeholder="Ej: 16 3/4" value="16 3/4" oninput="calcAutoHojas()"><span class="hint" id="calc-alto-hint"></span></div>
+        <div class="ig"><label>Ancho (")</label><input type="text" id="calc-ancho" inputmode="text" autocomplete="off" placeholder="Ej: 36" value="36"><span class="hint" id="calc-ancho-hint"></span></div>
       </div>
       <div class="ig"><label>Louvers (auto)</label><input type="text" inputmode="text" id="calc-hojas" value="5" readonly style="opacity:.6"></div>
     </div>
@@ -205,8 +211,8 @@ hr{border:none;border-top:1px solid var(--border);margin:10px 0}
     <div class="card">
       <div class="card-lbl" style="margin-bottom:10px">Dimensiones</div>
       <div class="r2">
-        <div class="ig"><label>Alto (")</label><input type="text" id="vp-alto" inputmode="text" value="19" ></div>
-        <div class="ig"><label>Ancho (")</label><input type="text" id="vp-ancho" inputmode="text" value="23" ></div>
+        <div class="ig"><label>Alto (")</label><input type="text" id="vp-alto" inputmode="text" autocomplete="off" placeholder="Ej: 19" value="19"></div>
+        <div class="ig"><label>Ancho (")</label><input type="text" id="vp-ancho" inputmode="text" autocomplete="off" placeholder="Ej: 23" value="23"></div>
       </div>
     </div>
   </div>
@@ -338,8 +344,8 @@ hr{border:none;border-top:1px solid var(--border);margin:10px 0}
       <div class="ig"><label>Cantidad</label><input type="text" inputmode="text" id="cot-qty" value="1" min="1"></div>
     </div>
     <div class="r2" style="margin-bottom:8px">
-      <div class="ig"><label>Alto (")</label><input type="text" id="cot-alto" inputmode="text" value="16 3/4"  oninput="cotAutoHojas()"><span class="hint" id="cot-alto-hint"></span></div>
-      <div class="ig"><label>Ancho (")</label><input type="text" id="cot-ancho" inputmode="text" value="36" ><span class="hint" id="cot-ancho-hint"></span></div>
+      <div class="ig"><label>Alto (")</label><input type="text" id="cot-alto" inputmode="text" autocomplete="off" placeholder="Ej: 16 3/4" value="16 3/4" oninput="cotAutoHojas()"><span class="hint" id="cot-alto-hint"></span></div>
+      <div class="ig"><label>Ancho (")</label><input type="text" id="cot-ancho" inputmode="text" autocomplete="off" placeholder="Ej: 36" value="36"><span class="hint" id="cot-ancho-hint"></span></div>
     </div>
     <div id="cot-louver-opts">
     <div class="card-lbl" style="margin-bottom:8px">Louver</div>
