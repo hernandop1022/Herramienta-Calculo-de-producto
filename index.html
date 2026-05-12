@@ -3084,8 +3084,8 @@ function selTablaProducto(btn) {
 
 // ── MOBILE CALC OUTPUT (overrides desktop version for mobile IDs) ──
 function calcularUnificado() {
-  const producto=(document.getElementById('calc-producto')||{}).value||'celosia-glass';
-  if(producto==='proyectante'){calcularProyectante();return;}
+  const producto=(document.getElementById('calc-producto')||document.getElementById('calc-producto')||{}).value||'celosia-glass';
+  const prodEl = document.getElementById('calc-producto') || document.getElementById('calc-producto');
 
   const relleno=(document.getElementById('calc-relleno')||{}).value||'glass';
   const color  =(document.getElementById('calc-color')  ||{}).value||'white';
@@ -3093,9 +3093,11 @@ function calcularUnificado() {
   const ancho  =parseFrac((document.getElementById('calc-ancho') ||{}).value||'');
   const hojas  =parseInt((document.getElementById('calc-hojas')  ||{}).value)||0;
   const tamHoja=parseFloat((document.getElementById('calc-hoja') ||{}).value)||3;
+  const calcProd=(document.getElementById('calc-producto')||document.getElementById('calc-producto')||{value:'celosia-glass'}).value;
+  if(calcProd==='proyectante'){calcularProyectante();return;}
   if(!alto||!ancho||!hojas){alert('Ingresa alto y ancho.');return;}
 
-  const margen=(CFG.cotMargenDef==='ferreteria' ? CFG.margenFer : CFG.margenPub)/100||0.5;
+  const margen=(CFG.cotMargenDef==='ferreteria'?CFG.margenFer:CFG.margenPub)/100||0.5;
   const arb=CFG.wi.arb/100||0.10;
   const mdo=CFG.wi.mdoWI||9.5;
   const cadd=CFG.wi.cadd||1;
@@ -3123,23 +3125,74 @@ function calcularUnificado() {
       {r:'MPW16',q:rb},{r:'MPW11',q:ws_v},{r:'MPW12',q:rb},{r:'MPW15',q:ops},
       {r:'MPW18',q:sil},{r:'MPW17',q:4}];
   }
+
   let totalMP=0;
   const filas=mats.map(i=>{const p=PRECIOS[i.r]||0,t=p*i.q;totalMP+=t;return{...i,p,t};});
   const totalProd=totalMP*(1+arb)+mdoAj+cadd;
-  const pv=totalProd*(1+margen);
-  const usd=v=>`$${v.toFixed(2)}`;
+  const pvWI=totalProd*(1+margen);
+  const {arb:arbSC,mdo:mdoSC,cadd:caddSC}=getCfgSC();
+  const pvSC=calcScreen(alto,ancho,margen,arbSC,mdoSC,caddSC);
+  const pv=pvWI+pvSC;
+  const usd=v=>'$'+v.toFixed(2);
 
-  document.getElementById('calc-grid').innerHTML=`
-    <div class="scard hi"><div class="slbl">Precio de Venta</div><div class="sval">${usd(pv)}</div><div class="ssub">${(margen*100).toFixed(0)}% margen</div></div>
-    <div class="scard"><div class="slbl">Materia Prima</div><div class="sval" style="font-size:16px">${usd(totalMP)}</div></div>
-    <div class="scard"><div class="slbl">Costo Prod.</div><div class="sval" style="font-size:16px">${usd(totalProd)}</div></div>`;
+  const grid=document.getElementById('calc-grid');
+  grid.innerHTML='';
+
+  // Main price card
+  const c1=document.createElement('div');
+  c1.className='scard hi';
+  c1.innerHTML='<div class="slbl">Precio de Venta (WI+SC)</div><div class="sval">'+usd(pv)+'</div><div class="ssub">'+(margen*100).toFixed(0)+'% margen</div>';
+  grid.appendChild(c1);
+
+  // WI card
+  const c2=document.createElement('div');
+  c2.className='scard';
+  c2.innerHTML='<div class="slbl">Ventana (WI)</div><div class="sval" style="font-size:16px">'+usd(pvWI)+'</div><div class="ssub">sin mosquitero</div>';
+  grid.appendChild(c2);
+
+  // SC card
+  const c3=document.createElement('div');
+  c3.className='scard';
+  c3.innerHTML='<div class="slbl">Mosquitero (SC)</div><div class="sval" style="font-size:16px">'+usd(pvSC)+'</div><div class="ssub">screen</div>';
+  grid.appendChild(c3);
+
+  // MP card
+  const c4=document.createElement('div');
+  c4.className='scard';
+  c4.innerHTML='<div class="slbl">Materia Prima</div><div class="sval" style="font-size:16px">'+usd(totalMP)+'</div>';
+  grid.appendChild(c4);
+
   document.getElementById('calc-mp-badge').textContent=usd(totalMP);
-  document.getElementById('calc-tbody').innerHTML=filas.map(f=>`<tr>
-    <td class="ref">${f.r}</td><td>${NOMBRES[f.r]||f.r}</td>
-    <td class="num">${f.r==='MPW02'?f.q.toFixed(3):toFrac(f.q)}</td>
-    <td class="cost">${usd(f.t)}</td></tr>`).join('')+
-    `<tr class="tr-total"><td colspan="3">TOTAL MP</td><td style="text-align:right">${usd(totalMP)}</td></tr>
-     <tr class="tr-pv"><td colspan="3">⟶ PRECIO VENTA</td><td style="text-align:right">${usd(pv)}</td></tr>`;
+  document.getElementById('calc-tbody').innerHTML=filas.map(function(f){
+    return '<tr><td class="ref">'+f.r+'</td><td>'+(NOMBRES[f.r]||f.r)+'</td><td class="num">'+(f.r==='MPW02'?f.q.toFixed(3):toFrac(f.q))+'</td><td class="cost">'+usd(f.t)+'</td></tr>';
+  }).join('')+
+  '<tr class="tr-total"><td colspan="3">TOTAL MP Ventana</td><td style="text-align:right">'+usd(totalMP)+'</td></tr>'+
+  '<tr class="tr-pv"><td colspan="3">&#8594; PRECIO WI</td><td style="text-align:right">'+usd(pvWI)+'</td></tr>';
+
+  // Screen materials
+  const telaRef = getTelaRef(ancho);
+  const laterales = (ancho*2)+(alto*2);
+  const scMats = [
+    {r:'MPW19', q:laterales},
+    {r:'MPW20', q:ancho},
+    {r:telaRef, q:alto},
+    {r:'MPW24', q:4},
+  ];
+  let totalMPSC=0;
+  const scFilas = scMats.map(function(i){
+    const p=PRECIOS[i.r]||0, t=p*i.q; totalMPSC+=t;
+    return '<tr style="background:#f0f7ff"><td class="ref">'+i.r+'</td><td>'+(NOMBRES[i.r]||i.r)+'</td><td class="num">'+toFrac(i.q)+'</td><td class="cost">'+usd(t)+'</td></tr>';
+  }).join('');
+
+  // Add SC section header + rows to tbody
+  const tbody = document.getElementById('calc-tbody');
+  tbody.innerHTML += [
+    '<tr style="background:#e8f0fe"><td colspan="4" style="font-family:monospace;font-size:10px;font-weight:700;color:#1a56db;padding:8px 10px">MOSQUITERO (SCREEN)</td></tr>',
+    scFilas,
+    '<tr class="tr-total"><td colspan="3">TOTAL MP Screen</td><td style="text-align:right">'+usd(totalMPSC)+'</td></tr>',
+    '<tr class="tr-pv"><td colspan="3">&#8594; PRECIO WI+SC</td><td style="text-align:right">'+usd(pv)+'</td></tr>'
+  ].join('');
+
   document.getElementById('calc-placeholder').style.display='none';
   document.getElementById('calc-output').style.display='block';
 }
