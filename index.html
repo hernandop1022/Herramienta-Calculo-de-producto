@@ -415,33 +415,33 @@ hr{border:none;border-top:1px solid var(--border);margin:10px 0}
   <div class="card">
     <div class="card-lbl">Márgenes</div>
     <div class="r2" style="margin-bottom:10px">
-      <div class="ig"><label>Público (%)</label><input type="text" inputmode="text" id="cfg-margen-pub2" value="50" step="5" oninput="guardarConfigUI()"></div>
-      <div class="ig"><label>Ferretería (%)</label><input type="text" inputmode="text" id="cfg-margen-fer2" value="40" step="5" oninput="guardarConfigUI()"></div>
+      <div class="ig"><label>Público (%)</label><input type="text" inputmode="text" id="cfg-margen-pub2" value="50" step="5"></div>
+      <div class="ig"><label>Ferretería (%)</label><input type="text" inputmode="text" id="cfg-margen-fer2" value="40" step="5"></div>
     </div>
-    <div class="ig"><label>Validez cotización</label><input type="text" id="cfg-validez2" value="15 días" oninput="guardarConfigUI()"></div>
+    <div class="ig"><label>Validez cotización</label><input type="text" id="cfg-validez2" value="15 días"></div>
   </div>
   <div class="card">
     <div class="card-lbl">Celosía — WI</div>
     <div class="r2" style="margin-bottom:8px">
-      <div class="ig"><label>Arbitrio (%)</label><input type="text" inputmode="text" id="cfg-arb2" value="10" step="0.5" oninput="guardarConfigUI()"></div>
-      <div class="ig"><label>M.O. ($)</label><input type="text" inputmode="text" id="cfg-mdo-wi2" value="9.50" step="0.5" oninput="guardarConfigUI()"></div>
+      <div class="ig"><label>Arbitrio (%)</label><input type="text" inputmode="text" id="cfg-arb2" value="10" step="0.5"></div>
+      <div class="ig"><label>M.O. ($)</label><input type="text" inputmode="text" id="cfg-mdo-wi2" value="9.50" step="0.5"></div>
     </div>
-    <div class="ig"><label>CIF ($)</label><input type="text" inputmode="text" id="cfg-cadd2" value="1.00" step="0.5" oninput="guardarConfigUI()"></div>
+    <div class="ig"><label>CIF ($)</label><input type="text" inputmode="text" id="cfg-cadd2" value="1.00" step="0.5"></div>
   </div>
   <div class="card">
     <div class="card-lbl">Celosía — Screen</div>
     <div class="r2">
-      <div class="ig"><label>Arbitrio (%)</label><input type="text" inputmode="text" id="cfg-arb-sc2" value="10" step="0.5" oninput="guardarConfigUI()"></div>
-      <div class="ig"><label>M.O. ($)</label><input type="text" inputmode="text" id="cfg-mdo-sc2" value="2.92" step="0.5" oninput="guardarConfigUI()"></div>
+      <div class="ig"><label>Arbitrio (%)</label><input type="text" inputmode="text" id="cfg-arb-sc2" value="10" step="0.5"></div>
+      <div class="ig"><label>M.O. ($)</label><input type="text" inputmode="text" id="cfg-mdo-sc2" value="2.92" step="0.5"></div>
     </div>
   </div>
   <div class="card">
     <div class="card-lbl">Proyectante</div>
     <div class="r2" style="margin-bottom:8px">
-      <div class="ig"><label>Arbitrio (%)</label><input type="text" inputmode="text" id="cfg-vp-arb2" value="11" step="0.5" oninput="guardarConfigUI()"></div>
-      <div class="ig"><label>M.O. ($)</label><input type="text" inputmode="text" id="cfg-vp-mdo2" value="65" step="1" oninput="guardarConfigUI()"></div>
+      <div class="ig"><label>Arbitrio (%)</label><input type="text" inputmode="text" id="cfg-vp-arb2" value="11" step="0.5"></div>
+      <div class="ig"><label>M.O. ($)</label><input type="text" inputmode="text" id="cfg-vp-mdo2" value="65" step="1"></div>
     </div>
-    <div class="ig"><label>CIF ($)</label><input type="text" inputmode="text" id="cfg-vp-cadd2" value="1.00" step="0.5" oninput="guardarConfigUI()"></div>
+    <div class="ig"><label>CIF ($)</label><input type="text" inputmode="text" id="cfg-vp-cadd2" value="1.00" step="0.5"></div>
   </div>
   <div class="card">
     <div class="card-lbl">Backup</div>
@@ -476,6 +476,9 @@ hr{border:none;border-top:1px solid var(--border);margin:10px 0}
     </div>
   </div>
 
+  <button class="btn-main" onclick="guardarConfigUI()" style="background:#1C1C1B;margin-bottom:8px">
+    💾 Guardar Configuración
+  </button>
   <div class="toast" id="cfg-saved-toast">✓ Guardado</div>
 </div>
 
@@ -1133,26 +1136,28 @@ function imprimirTabla() {
 
   const tableHTML = tablaEl.querySelector('table').outerHTML;
 
+  const tipoPrecio = CFG.cotMargenDef === 'ferreteria' ? 'FERRETERÍA' : 'PÚBLICO';
+  const tipoBg     = CFG.cotMargenDef === 'ferreteria' ? '#cc0000' : '#2a7a2a';
   imprimirHTML(`<!DOCTYPE html><html lang="es"><head>
 <meta charset="UTF-8"><title>Price Table — The Factory</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:Arial,sans-serif;font-size:10px;color:#1C1C1B;padding:12px 16px}
+body{font-family:Arial,sans-serif;font-size:12px;color:#1C1C1B;padding:14px 18px}
 .hdr{display:flex;align-items:center;border-bottom:3px solid #EC5F29;margin-bottom:10px;padding-bottom:8px}
 .hdr-logo{height:40px;width:auto;margin-right:14px}
-.hdr-title{font-size:16px;font-weight:900;letter-spacing:0.5px}
-.hdr-sub{font-size:11px;font-weight:700;color:#EC5F29;margin-top:2px}
-.hdr-meta{margin-left:auto;text-align:right;font-size:10px;color:#666}
+.hdr-title{font-size:18px;font-weight:900;letter-spacing:0.5px}
+.hdr-sub{font-size:13px;font-weight:700;color:#EC5F29;margin-top:2px}
+.hdr-meta{margin-left:auto;text-align:right;font-size:11px;color:#666}
 .hdr-fecha{font-size:9px;color:#aaa;margin-top:2px}
-table{width:100%;border-collapse:collapse;font-size:9px}
-thead th{background:#1C1C1B;color:#fff;padding:5px 6px;text-align:center;border:1px solid #333;font-size:8px;letter-spacing:.5px}
+table{width:100%;border-collapse:collapse;font-size:11px}
+thead th{background:#1C1C1B;color:#fff;padding:7px 8px;text-align:center;border:1px solid #333;font-size:10px;letter-spacing:.5px}
 thead th.wo{background:#EC5F29 !important;color:#fff}
 thead th.wg{background:#777 !important;color:#fff}
 thead th.wgr{background:#2a7a2a !important;color:#fff}
 thead th.wrd{background:#880000 !important;color:#fff}
 tbody tr:nth-child(odd) td{background:#f5f5f5}
 tbody tr:nth-child(even) td{background:#fff}
-tbody td{padding:4px 6px;border:1px solid #ddd;text-align:right}
+tbody td{padding:6px 8px;border:1px solid #ddd;text-align:right;font-size:11px}
 tbody td.lv{background:#1C1C1B !important;color:#fff !important;font-weight:700;text-align:center}
 tbody td.ht{text-align:center;color:#555}
 tbody td.ws{font-weight:700;color:#EC5F29}
@@ -1167,8 +1172,9 @@ tbody td.ws{font-weight:700;color:#EC5F29}
     <div class="hdr-sub">${subtitle}</div>
   </div>
   <div class="hdr-meta">
+    <div style=\"display:inline-block;background:${tipoBg};color:#fff;font-weight:700;font-size:12px;padding:4px 14px;border-radius:4px;margin-bottom:6px\">${tipoPrecio}</div>
     <div>${metaRight}</div>
-    <div class="hdr-fecha">${fecha}</div>
+    <div class=\"hdr-fecha\">${fecha}</div>
   </div>
 </div>
 ${tableHTML}
@@ -1781,19 +1787,19 @@ function imprimirCotizacion() {
 <title>${cotNum} — The Factory</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:Arial,sans-serif;font-size:11px;color:#1C1C1B;padding:24px 32px}
+body{font-family:Arial,sans-serif;font-size:13px;color:#1C1C1B;padding:24px 32px}
 .hdr{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:3px solid #EC5F29;padding-bottom:14px;margin-bottom:16px}
 .hdr img{height:50px}.hdr h1{font-size:22px;font-weight:900;letter-spacing:-0.5px}.hdr p{font-size:10px;color:#888;margin-top:2px}
-.cotnum{font-size:18px;font-weight:700;color:#EC5F29;text-align:right}.fecha{font-size:10px;color:#888;text-align:right;margin-top:2px}
+.cotnum{font-size:20px;font-weight:700;color:#EC5F29;text-align:right}.fecha{font-size:11px;color:#888;text-align:right;margin-top:2px}.badge{display:inline-block;margin-top:6px;background:#2a7a2a;color:#fff;font-weight:700;font-size:11px;padding:3px 10px;border-radius:4px}
 .cbox{display:grid;grid-template-columns:1fr 1fr;gap:8px;background:#f5f5f5;border-radius:8px;padding:12px 16px;margin-bottom:16px}
 .cbox .lb{font-size:9px;color:#888;text-transform:uppercase;letter-spacing:0.5px}.cbox .vl{font-weight:600;margin-top:2px}
 table{width:100%;border-collapse:collapse;font-size:11px;margin-bottom:16px}
-thead th{background:#1C1C1B;color:#fff;padding:7px 10px;text-align:left;font-size:9px;letter-spacing:0.8px;text-transform:uppercase}
+thead th{background:#1C1C1B;color:#fff;padding:9px 10px;text-align:left;font-size:12px;text-transform:uppercase}
 thead th.r{text-align:right}
-tbody tr:nth-child(odd){background:#f9f9f9}tbody td{padding:7px 10px;border-bottom:1px solid #eee}
+tbody tr:nth-child(odd){background:#f9f9f9}tbody td{padding:10px 10px;border-bottom:1px solid #eee;font-size:13px}
 tfoot td{padding:8px 10px;font-weight:700}
-.sr td{background:#f0ddd0;border-top:2px solid #EC5F29}.tr td{background:#EC5F29;color:#fff;font-size:14px}
-.notas{background:#f9f9f9;border:1px solid #ddd;border-radius:6px;padding:12px;font-size:10px;color:#555;margin-bottom:16px}
+.sr td{background:#f0ddd0;border-top:2px solid #EC5F29}.tr td{background:#EC5F29;color:#fff;font-size:16px;font-weight:700;padding:12px 10px}
+.notas{background:#f9f9f9;border:1px solid #ddd;border-radius:6px;padding:12px;font-size:12px;color:#555;margin-bottom:16px}
 .footer{text-align:center;font-size:9px;color:#aaa;border-top:1px solid #eee;padding-top:10px}
 @media print{body{padding:12px 18px}@page{margin:1cm;size:portrait}}
 </style></head><body>
@@ -2104,6 +2110,19 @@ function cargarConfig() {
   if(g('cfg-vp-mdo'))     g('cfg-vp-mdo').value     = CFG.vp.mdo;
   if(g('cfg-vp-cadd'))    g('cfg-vp-cadd').value    = CFG.vp.cadd;
 
+  // Populate mobile config inputs (cfg-*2)
+  const s = id => document.getElementById(id) || {};
+  s('cfg-margen-pub2').value = CFG.margenPub;
+  s('cfg-margen-fer2').value = CFG.margenFer;
+  s('cfg-arb2').value        = CFG.wi.arb;
+  s('cfg-mdo-wi2').value     = CFG.wi.mdoWI;
+  s('cfg-cadd2').value       = CFG.wi.cadd;
+  s('cfg-arb-sc2').value     = CFG.wi.arbSC;
+  s('cfg-mdo-sc2').value     = CFG.wi.mdoSC;
+  s('cfg-validez2').value    = CFG.validez;
+  s('cfg-vp-arb2').value     = CFG.vp.arb;
+  s('cfg-vp-mdo2').value     = CFG.vp.mdo;
+  s('cfg-vp-cadd2').value    = CFG.vp.cadd;
   syncConfigToTabs();
   setTimeout(() => setPrecioTipo(CFG.cotMargenDef), 50);
 }
@@ -3048,22 +3067,25 @@ function initConfigUI() {
 }
 
 function guardarConfigUI() {
-  const g=id=>{const e=document.getElementById(id);return e?e.value:'';};
-  CFG.margenPub  = parseFloat(g('cfg-margen-pub2'))||50;
-  CFG.margenFer  = parseFloat(g('cfg-margen-fer2'))||40;
-  CFG.wi.arb     = parseFloat(g('cfg-arb2'))||10;
-  CFG.wi.mdoWI   = parseFloat(g('cfg-mdo-wi2'))||9.5;
-  CFG.wi.cadd    = parseFloat(g('cfg-cadd2'))||1;
-  CFG.wi.arbSC   = parseFloat(g('cfg-arb-sc2'))||10;
-  CFG.wi.mdoSC   = parseFloat(g('cfg-mdo-sc2'))||2.92;
-  CFG.validez    = g('cfg-validez2')||'15 días';
-  CFG.vp.arb     = parseFloat(g('cfg-vp-arb2'))||11;
-  CFG.vp.mdo     = parseFloat(g('cfg-vp-mdo2'))||65;
-  CFG.vp.cadd    = parseFloat(g('cfg-vp-cadd2'))||1;
-  guardarConfig();
+  const g = id => { const e = document.getElementById(id); return e ? e.value : ''; };
+  const _pub = parseFloat(g('cfg-margen-pub2')); const _fer = parseFloat(g('cfg-margen-fer2'));
+  alert('Guardando: Pub='+_pub+' Fer='+_fer);
+  CFG.margenPub  = parseFloat(g('cfg-margen-pub2')) || 50;
+  CFG.margenFer  = parseFloat(g('cfg-margen-fer2')) || 40;
+  CFG.wi.arb     = parseFloat(g('cfg-arb2'))        || 10;
+  CFG.wi.mdoWI   = parseFloat(g('cfg-mdo-wi2'))     || 9.5;
+  CFG.wi.cadd    = parseFloat(g('cfg-cadd2'))        || 1;
+  CFG.wi.arbSC   = parseFloat(g('cfg-arb-sc2'))     || 10;
+  CFG.wi.mdoSC   = parseFloat(g('cfg-mdo-sc2'))     || 2.92;
+  CFG.validez    = g('cfg-validez2')                || '15 días';
+  CFG.vp.arb     = parseFloat(g('cfg-vp-arb2'))     || 11;
+  CFG.vp.mdo     = parseFloat(g('cfg-vp-mdo2'))     || 65;
+  CFG.vp.cadd    = parseFloat(g('cfg-vp-cadd2'))    || 1;
+  // Save directly — bypass guardarConfig() which reads desktop IDs without suffix
+  try { localStorage.setItem('thefactory_config', JSON.stringify(CFG)); } catch(e) {}
   syncConfigToTabs();
-  const t=document.getElementById('cfg-saved-toast');
-  if(t){t.style.opacity='1';setTimeout(()=>t.style.opacity='0',1500);}
+  const t = document.getElementById('cfg-saved-toast');
+  if (t) { t.style.opacity='1'; setTimeout(() => t.style.opacity='0', 1500); }
 }
 
 // ── MOBILE TABLA PRODUCTO SELECTOR ────────────────────────────
