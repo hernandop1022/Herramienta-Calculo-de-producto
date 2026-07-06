@@ -188,6 +188,7 @@ hr{border:none;border-top:1px solid var(--border);margin:10px 0}
         <button class="seg-btn active" data-val="white" onclick="selC(this,'calc-color')">⬜ White</button>
         <button class="seg-btn"        data-val="grey"  onclick="selC(this,'calc-color')">▪ Grey</button>
         <button class="seg-btn"        data-val="black" onclick="selC(this,'calc-color')">⬛ Black</button>
+        <button class="seg-btn"        data-val="osj"   onclick="selC(this,'calc-color')">🟫 OSJ</button>
       </div>
       <input type="hidden" id="calc-color" value="white">
 
@@ -264,6 +265,7 @@ hr{border:none;border-top:1px solid var(--border);margin:10px 0}
         <button class="seg-btn active" data-val="white" onclick="selC(this,'t-color')">⬜ White</button>
         <button class="seg-btn"        data-val="grey"  onclick="selC(this,'t-color')">▪ Grey</button>
         <button class="seg-btn"        data-val="black" onclick="selC(this,'t-color')">⬛ Black</button>
+        <button class="seg-btn"        data-val="osj"   onclick="selC(this,'t-color')">🟫 OSJ</button>
       </div>
       <input type="hidden" id="t-color" value="white">
       <div class="card-lbl" style="margin-bottom:8px">Louver</div>
@@ -339,6 +341,7 @@ hr{border:none;border-top:1px solid var(--border);margin:10px 0}
           <option value="white">White</option>
           <option value="grey">Grey</option>
           <option value="black">Black</option>
+          <option value="osj">Old San Juan</option>
         </select>
       </div>
       <div class="ig"><label>Cantidad</label><input type="text" inputmode="text" id="cot-qty" value="1" min="1"></div>
@@ -378,10 +381,21 @@ hr{border:none;border-top:1px solid var(--border);margin:10px 0}
     <div id="cot-list"></div>
     <div class="tbar"><div class="tbar-lbl">TOTAL</div><div class="tbar-val" id="cot-total-val">$0.00</div></div>
     <div class="ig" style="margin-bottom:8px"><label>Notas</label><input type="text" id="cot-notas" value="Precios no incluyen instalación."></div>
-    <div style="display:flex;gap:8px">
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
       <button class="btn-sec" style="flex:1" onclick="limpiarCotizacion()">Limpiar</button>
       <button class="btn-sec" style="flex:1;color:var(--accent);border-color:var(--accent)" onclick="verDespiece()">🔩 Despiece</button>
+      <button class="btn-sec" style="flex:1;color:#1a56db;border-color:#1a56db" onclick="verAnalisis()">📊 Análisis</button>
     </div>
+    <button class="btn-sec" style="margin-top:6px;color:#166534;border-color:#166534;width:100%" onclick="recalcularCotizacion()">🔄 Recalcular con comisiones actuales</button>
+  </div>
+
+  <!-- ANÁLISIS MODAL -->
+  <div id="analisis-wrap" style="display:none;margin-top:14px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+      <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:15px">📊 Análisis de Costos</div>
+      <button onclick="document.getElementById('analisis-wrap').style.display='none'" style="background:none;border:none;font-size:18px;color:var(--muted);cursor:pointer">✕</button>
+    </div>
+    <div id="analisis-content"></div>
   </div>
 
   <div style="margin-top:14px">
@@ -444,6 +458,21 @@ hr{border:none;border-top:1px solid var(--border);margin:10px 0}
     <div class="ig"><label>CIF ($)</label><input type="text" inputmode="text" id="cfg-vp-cadd2" value="1.00" step="0.5"></div>
   </div>
   <div class="card">
+    <div class="card-lbl">Comisión Vendedor</div>
+    <div style="font-size:11px;color:var(--muted);margin-bottom:10px">
+      Porcentaje sobre el precio de venta. El precio al cliente sube para que tú recibas el mismo monto.
+    </div>
+    <div class="r2" style="margin-bottom:8px">
+      <div class="ig"><label>Celosía Glass (%)</label><input type="text" inputmode="text" id="cfg-com-glass" value="0"></div>
+      <div class="ig"><label>Celosía Solid (%)</label><input type="text" inputmode="text" id="cfg-com-solid" value="0"></div>
+    </div>
+    <div class="r2">
+      <div class="ig"><label>Proyectante (%)</label><input type="text" inputmode="text" id="cfg-com-vp" value="0"></div>
+      <div class="ig"><label>Mosquitero (%)</label><input type="text" inputmode="text" id="cfg-com-screen" value="0"></div>
+    </div>
+  </div>
+
+  <div class="card">
     <div class="card-lbl">Backup</div>
     <button class="btn-main" style="background:#1a56db;margin-bottom:8px" onclick="exportarConfig()">⬇ Exportar Config</button>
     <label class="btn-main" style="background:#166534;display:block;text-align:center;cursor:pointer;padding:14px;border-radius:10px;font-family:'Syne',sans-serif;font-weight:700;font-size:15px;color:#fff">
@@ -460,7 +489,7 @@ hr{border:none;border-top:1px solid var(--border);margin:10px 0}
 
     <!-- BD Materiales -->
     <div id="cfg-section-bd">
-      <div style="font-size:11px;color:var(--muted);margin-bottom:10px">Toca cualquier precio para editarlo. Se guarda automáticamente.</div>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:10px">Edita precio, unidad de compra y factor. <br><span style="color:#1a56db">Factor</span> = cuántas unidades técnicas trae una unidad de compra (ej: perfil de 192"). Deja vacío si se compra por unidad.</div>
       <div id="bd-list"></div>
     </div>
 
@@ -552,6 +581,13 @@ const PRECIOS = {
   'MPW28':    0.271875,   // SILL BLACK
   'MPW29':    0.252969,   // FEMALE JAMB BLACK
   'MPW30':    0.252969,   // MALE JAMB BLACK
+  // Screen materials
+  'MPW19':    0.038396,   // Perfil Lateral Bareta
+  'MPW20':    0.036706,   // Perfil Central Bareta
+  'MPW21':    0.012667,   // Tela 24"
+  'MPW22':    0.016625,   // Tela 30"
+  'MPW23':    0.019958,   // Tela 36"
+  'MPW24':    0.070000,   // Stiffener
 };
 
 const NOMBRES = {
@@ -675,6 +711,7 @@ const MC = {
   white:{jf:'CIA-3229',h:'CIA-E207',s:'CIA-3065',jm:'CIA-3371',b:'CIA-3493',label:'White'},
   grey: {jf:'MPW34',   h:'MPW32',   s:'MPW33',   jm:'MPW35',   b:'MPW31',   label:'Grey'},
   black:{jf:'MPW29',   h:'MPW27',   s:'MPW28',   jm:'MPW30',   b:'MPW26',   label:'Black'},
+  osj:  {jf:'CIA-3229',h:'CIA-E207',s:'CIA-3065',jm:'CIA-3371',b:'CIA-3493',label:'Old San Juan',extra:20},
 };
 const MATERIALES_COLOR = {
   white: {
@@ -1236,7 +1273,10 @@ const UNIDADES_COMPRA = {
   'MPW15':    {label:'Unidad',          factor:null},
   'MPW16':    {label:'Unidad',          factor:null},
   'MPW17':    {label:'Unidad',          factor:null},
-  'MPW24':    {label:'Unidad',          factor:null},
+  'MPW21':    {label:'Rollo',            factor:null},
+  'MPW22':    {label:'Rollo',            factor:null},
+  'MPW23':    {label:'Rollo',            factor:null},
+  'MPW24':    {label:'Unidad',           factor:null},
 };
 
 const BD_CENTRAL = [
@@ -1690,13 +1730,14 @@ function calcPrecioUnitario(tipo, alto, ancho, hojas, tamHoja, color, margen) {
   const {arb, mdo: mdo, cadd} = getCfgWI();
   const {arb: arbSC, mdo: mdoSC, cadd: caddSC} = getCfgSC();
 
+  const osjExtra = (color==='osj' ? 20 : 0);
   if (tipo === 'ws-glass') {
     return calcWI(alto, ancho, hojas, tamHoja, margen, arb, mdo, cadd, color)
-         + calcScreen(alto, ancho, margen, arbSC, mdoSC, caddSC);
+         + calcScreen(alto, ancho, margen, arbSC, mdoSC, caddSC) + osjExtra;
   }
   if (tipo === 'ws-solid') {
     return calcWISolid(alto, ancho, hojas, tamHoja, margen, arb, mdo, cadd, color)
-         + calcScreen(alto, ancho, margen, arbSC, mdoSC, caddSC);
+         + calcScreen(alto, ancho, margen, arbSC, mdoSC, caddSC) + osjExtra;
   }
   if (tipo === 'vp') {
     return calcPrecioVP(alto, ancho, margen);
@@ -2023,42 +2064,98 @@ function generarDespiece() {
 }
 
 function imprimirDespiece() {
-  const list = document.getElementById('desp-list');
-  if (!list || list.style.display === 'none') { alert('Genera el despiece primero.'); return; }
-  const fecha = new Date().toLocaleDateString('es-CO',{day:'2-digit',month:'long',year:'numeric'});
-  const cliente = (document.getElementById('cot-cliente') || {}).value || '—';
-  const total   = (document.getElementById('desp-total-val') || {}).textContent || '—';
+  if (!cotItems.length) { alert('Genera el despiece primero.'); return; }
 
-  const filas = Array.from(list.querySelectorAll('.desp-row')).map(row => {
-    const ref    = (row.querySelector('.dr-ref')     || {}).textContent || '';
-    const nombre = (row.querySelector('.dr-name')    || {}).textContent || '';
-    const uc     = (row.querySelector('.dr-uc')      || {}).textContent || '';
-    const pedir  = (row.querySelector('.dr-pedir')   || {}).textContent || '';
-    const tec    = (row.querySelector('.dr-tecnica') || {}).textContent || '';
-    const costo  = (row.querySelector('.dr-costo')   || {}).textContent || '';
-    return `<tr><td style="color:#EC5F29;font-weight:700">${ref}</td><td>${nombre}</td>
-      <td>${uc}</td><td style="text-align:right;font-weight:700;color:#EC5F29">${pedir}</td>
-      <td style="text-align:right">${tec}</td><td style="text-align:right">${costo}</td></tr>`;
+  const fecha   = new Date().toLocaleDateString('es-CO',{day:'2-digit',month:'long',year:'numeric'});
+  const cliente = (document.getElementById('cot-cliente')||{}).value||'—';
+  const logoEl  = document.querySelector('.hdr img');
+  const logoSrc = logoEl ? logoEl.src : '';
+
+  // Recalculate from cotItems (same logic as verDespiece)
+  const tots = {};
+  cotItems.forEach(it => {
+    const m = calcMaterialesItem(it);
+    Object.entries(m).forEach(([r,q]) => { tots[r] = (tots[r]||0) + q; });
+  });
+
+  const PROFILE_REFS = ['CIA-3229','CIA-E207','CIA-3065','CIA-3371','CIA-3493',
+    'MPW34','MPW32','MPW33','MPW35','MPW31',
+    'MPW29','MPW27','MPW28','MPW30','MPW26',
+    'CIA-3215','A-200','MPW19','MPW20'];
+
+  let totalMP = 0;
+
+  const entries = Object.entries(tots).filter(([,q])=>q>0.001);
+  entries.sort(([a],[b]) => {
+    const aP=PROFILE_REFS.includes(a), bP=PROFILE_REFS.includes(b);
+    if(aP&&!bP) return -1; if(!aP&&bP) return 1; return a.localeCompare(b);
+  });
+
+  const filas = entries.map(([ref, qty]) => {
+    const isProfile = PROFILE_REFS.includes(ref);
+    const qFinal    = isProfile ? qty * 1.10 : qty;
+    const p         = PRECIOS[ref]||0;
+    const costo     = p * qFinal;
+    const costoImp  = isProfile ? costo * 1.115 : null;
+    totalMP        += costo;
+    const uc        = UNIDADES_COMPRA[ref];
+    let pedir, uLabel;
+    if(uc&&uc.factor!==null){ uLabel=uc.label; pedir=Math.ceil(qFinal/uc.factor); }
+    else { uLabel=uc?uc.label:'Unidad'; pedir=Math.ceil(qFinal); }
+    const qDisp = ref==='MPW02' ? qty.toFixed(4)+' ft²' : toFrac(qty)+(isProfile?' +10%':'');
+
+    const costoCell = isProfile
+      ? `<td style="text-align:right;font-weight:700">$${costo.toFixed(2)}</td>
+         <td style="text-align:right;font-weight:700;color:#1a56db">$${costoImp.toFixed(2)}</td>`
+      : `<td style="text-align:right;font-weight:700">$${costo.toFixed(2)}</td><td></td>`;
+
+    return `<tr style="${isProfile?'background:#fff8f5':''}">
+      <td style="color:#EC5F29;font-weight:700">${ref}${isProfile?' <span style="font-size:8px;background:#fff3ee;color:#EC5F29;padding:1px 4px;border-radius:2px">+10%</span>':''}</td>
+      <td>${NOMBRES[ref]||ref}</td>
+      <td style="text-align:center">${uLabel}</td>
+      <td style="text-align:right;font-weight:700;color:#EC5F29;font-size:13px">${pedir}</td>
+      <td style="text-align:right;color:#666">${qDisp}</td>
+      ${costoCell}
+    </tr>`;
   }).join('');
 
-  imprimirHTML(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Despiece</title>
-<style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:Arial,sans-serif;font-size:11px;padding:16px}
-.hdr{display:flex;justify-content:space-between;border-bottom:3px solid #EC5F29;padding-bottom:10px;margin-bottom:12px}
-h1{font-size:16px;font-weight:900}p{font-size:10px;color:#888}
+  imprimirHTML(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Despiece — The Factory</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Arial,sans-serif;font-size:11px;color:#1C1C1B;padding:16px 20px}
+.hdr{display:flex;justify-content:space-between;align-items:start;border-bottom:3px solid #EC5F29;padding-bottom:10px;margin-bottom:14px}
+.hdr img{height:44px}.brand{font-size:18px;font-weight:900}.brand-sub{font-size:10px;color:#888}
+.title{font-size:15px;font-weight:700;color:#EC5F29;text-align:right}.fecha{font-size:10px;color:#888;text-align:right;margin-top:2px}
 table{width:100%;border-collapse:collapse}
-thead th{background:#1C1C1B;color:#fff;padding:6px 8px;text-align:left;font-size:9px;text-transform:uppercase}
-thead th.r{text-align:right}tbody tr:nth-child(odd){background:#f5f5f5}
-tbody td{padding:5px 8px;border-bottom:1px solid #eee}
-tfoot td{padding:8px;font-weight:700;background:#EC5F29;color:#fff}tfoot td.r{text-align:right}
-@media print{@page{margin:1cm}}</style></head><body>
-<div class="hdr"><div><h1>THE FACTORY</h1><p>windows and doors</p></div>
-<div style="text-align:right"><div style="font-size:14px;font-weight:700;color:#EC5F29">DESPIECE DE MATERIALES</div>
-<div style="font-size:10px;color:#888">${fecha}</div>${cliente!=='—'?`<div style="font-size:10px;color:#888">Cliente: ${cliente}</div>`:''}</div></div>
-<table><thead><tr><th>Ref.</th><th>Material</th><th>U.Compra</th><th class="r">Cant.Pedir</th><th class="r">Cant.Técnica</th><th class="r">Costo</th></tr></thead>
-<tbody>${filas}</tbody>
-<tfoot><tr><td colspan="5">TOTAL COSTO MATERIALES</td><td class="r">${total}</td></tr></tfoot></table>
-<div style="text-align:center;font-size:9px;color:#aaa;border-top:1px solid #eee;padding-top:8px;margin-top:12px">The Factory · ${fecha}</div>
-<script>window.onload=function(){window.print()}<\/script></body></html>`);
+thead th{background:#1C1C1B;color:#fff;padding:7px 8px;text-align:left;font-size:10px;text-transform:uppercase}
+thead th.r{text-align:right}thead th.b{background:#1a3a6a;color:#fff}
+tbody tr:nth-child(even){background:#f9f9f9}
+tbody td{padding:6px 8px;border-bottom:1px solid #eee;font-size:11px}
+tfoot td{background:#EC5F29;color:#fff;font-weight:700;font-size:13px;padding:9px 8px}
+tfoot td.r{text-align:right}
+@media print{@page{margin:1cm;size:portrait}body{padding:10px}}
+</style></head><body>
+<div class="hdr">
+  <div style="display:flex;align-items:center;gap:12px">
+    ${logoSrc?`<img src="${logoSrc}">`:''}
+    <div><div class="brand">THE FACTORY</div><div class="brand-sub">windows and doors</div></div>
+  </div>
+  <div><div class="title">DESPIECE DE MATERIALES</div><div class="fecha">${fecha}</div>
+  ${cliente!=='—'?`<div style="font-size:10px;color:#888">Cliente: ${cliente}</div>`:''}
+  </div>
+</div>
+<table>
+  <thead><tr>
+    <th>Ref.</th><th>Material</th><th style="text-align:center">U.Compra</th>
+    <th class="r">Cant.Pedir</th><th class="r">Cant.Técnica</th>
+    <th class="r">Costo</th><th class="r b">+Imp 11.5%</th>
+  </tr></thead>
+  <tbody>${filas}</tbody>
+  <tfoot><tr><td colspan="5">TOTAL COSTO MATERIALES</td><td class="r">$${totalMP.toFixed(2)}</td><td></td></tr></tfoot>
+</table>
+<div style="text-align:center;font-size:9px;color:#aaa;border-top:1px solid #eee;padding-top:8px;margin-top:12px">The Factory · windows and doors · ${fecha}</div>
+<script>window.onload=function(){window.print()}<\/script>
+</body></html>`);
 }
 
 // ── CONFIGURACIÓN GLOBAL ───────────────────────────────────────
@@ -2072,6 +2169,7 @@ const CONFIG_DEFAULTS = {
   // Por producto
   wi:  { arb: 10, arbSC: 10, mdoWI: 9.50, mdoSC: 2.92, cadd: 1.00 },
   vp:  { arb: 11, mdo: 65.00, cadd: 1.00 },
+  com: { glass: 0, solid: 0, vp: 0, screen: 0 },
   // Futuros productos
   // vf:  { arb: 10, mdo: 0, cadd: 1.00 },
   // pa:  { arb: 10, mdo: 0, cadd: 1.00 },
@@ -2123,6 +2221,21 @@ function cargarConfig() {
   s('cfg-vp-arb2').value     = CFG.vp.arb;
   s('cfg-vp-mdo2').value     = CFG.vp.mdo;
   s('cfg-vp-cadd2').value    = CFG.vp.cadd;
+  if (CFG.com) {
+    s('cfg-com-glass').value  = CFG.com.glass  || 0;
+    s('cfg-com-solid').value  = CFG.com.solid  || 0;
+    s('cfg-com-vp').value     = CFG.com.vp     || 0;
+    s('cfg-com-screen').value = CFG.com.screen || 0;
+  }
+  // Restore custom UC if saved
+  try {
+    const saved = JSON.parse(localStorage.getItem('thefactory_config')||'{}');
+    if (saved.uc) {
+      Object.entries(saved.uc).forEach(([ref, val]) => {
+        UNIDADES_COMPRA[ref] = val;
+      });
+    }
+  } catch(e) {}
   syncConfigToTabs();
   setTimeout(() => setPrecioTipo(CFG.cotMargenDef), 50);
 }
@@ -2414,10 +2527,13 @@ function generarTablaPrecios() {
     const alto = lv * tamHoja + 1.75;
     html += `<tr><td class="lv">${lv}</td><td class="ht">${toFrac(alto)}</td>`;
     anchos.forEach((ancho, ai) => {
-      const wi = relleno === 'solid'
+      const wiBase = relleno === 'solid'
         ? calcWISolid(alto, ancho, lv, tamHoja, margen, arb, mdo, cadd, color)
         : calcWI(alto, ancho, lv, tamHoja, margen, arb, mdo, cadd, color);
-      const sc = calcScreen(alto,ancho,margen,arbSC,mdoSC,cadd);
+      const scBase = calcScreen(alto,ancho,margen,arbSC,mdoSC,cadd);
+      const osjT = (color==='osj' ? 20 : 0);
+      const wi = precioConComision(wiBase, relleno==='solid'?'ws-solid':'ws-glass') + osjT;
+      const sc = precioConComision(scBase, 'screen');
       const ws = wi+sc;
       const bg = ai%2===0 ? 'background:#fff3ee;' : 'background:#f0f0f0;';
       html += `<td style="${bg}">${wi.toFixed(2)}</td><td style="${bg}">${sc.toFixed(2)}</td><td style="${bg}font-weight:700;color:#EC5F29">${ws.toFixed(2)}</td>`;
@@ -2461,8 +2577,8 @@ function generarTablaPreciosVP() {
   altos.forEach(alto => {
     html += `<tr><td class="lv" style="position:sticky;left:0;background:#1C1C1B;color:#fff;font-weight:700">${alto}"</td>`;
     anchos.forEach((ancho, ai) => {
-      const pub = calcPrecioVP(alto, ancho, margenPub);
-      const fer = calcPrecioVP(alto, ancho, margenFer);
+      const pub = precioConComision(calcPrecioVP(alto, ancho, margenPub), 'vp');
+      const fer = precioConComision(calcPrecioVP(alto, ancho, margenFer), 'vp');
       const bg = ai%2===0 ? 'background:#fff3ee;' : 'background:#f0f0f0;';
       html += `<td style="${bg}text-align:right">${pub.toFixed(2)}</td><td style="${bg}text-align:right;color:#cc0000">${fer.toFixed(2)}</td>`;
     });
@@ -2781,22 +2897,63 @@ function switchCfgSection(section) {
 function renderBDMobile() {
   const el = document.getElementById('bd-list');
   if (!el) return;
-  el.innerHTML = BD_CENTRAL.map(item => `
-    <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #eee">
-      <div>
-        <div style="font-size:11px;font-weight:700;color:var(--accent)">${item.ref}</div>
-        <div style="font-size:12px">${item.nombre}</div>
-        <div style="font-size:10px;color:var(--muted)">${item.unidad}</div>
+  el.innerHTML = BD_CENTRAL.map(item => {
+    const uc     = UNIDADES_COMPRA[item.ref] || {label:'Unidad', factor:null};
+    const precio = (PRECIOS[item.ref]||0).toFixed(4);
+    const factor = uc.factor !== null ? uc.factor : '';
+    return `
+    <div style="padding:10px 0;border-bottom:1px solid #eee">
+      <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:8px">
+        <div>
+          <div style="font-size:11px;font-weight:700;color:var(--accent)">${item.ref}</div>
+          <div style="font-size:12px">${item.nombre}</div>
+          <div style="font-size:10px;color:var(--muted)">${item.unidad}</div>
+        </div>
       </div>
-      <div style="display:flex;align-items:center;gap:6px">
-        <span style="font-size:10px;color:var(--muted)">$</span>
-        <input type="text" inputmode="text" step="0.0001"
-          value="${(PRECIOS[item.ref]||0).toFixed(4)}"
-          style="width:80px;background:var(--inp);border:1px solid var(--border);border-radius:6px;padding:6px 8px;font-family:'DM Mono',monospace;font-size:13px;text-align:right"
-          onchange="actualizarPrecio('${item.ref}', this.value)">
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
+        <div>
+          <div style="font-size:9px;font-weight:700;color:var(--muted);margin-bottom:3px">PRECIO/UN</div>
+          <input type="text" inputmode="text" value="${precio}"
+            style="width:100%;background:var(--inp);border:1px solid var(--border);border-radius:6px;padding:7px 8px;font-family:'DM Mono',monospace;font-size:13px;text-align:right"
+            onchange="actualizarPrecio('${item.ref}', this.value)">
+        </div>
+        <div>
+          <div style="font-size:9px;font-weight:700;color:var(--muted);margin-bottom:3px">U.COMPRA</div>
+          <input type="text" inputmode="text" value="${uc.label}"
+            style="width:100%;background:var(--inp);border:1px solid var(--border);border-radius:6px;padding:7px 8px;font-size:13px;text-align:center"
+            onchange="actualizarUC('${item.ref}', 'label', this.value)">
+        </div>
+        <div>
+          <div style="font-size:9px;font-weight:700;color:var(--muted);margin-bottom:3px">FACTOR</div>
+          <input type="text" inputmode="text" value="${factor}" placeholder="null"
+            style="width:100%;background:var(--inp);border:1px solid var(--border);border-radius:6px;padding:7px 8px;font-family:'DM Mono',monospace;font-size:13px;text-align:right"
+            onchange="actualizarUC('${item.ref}', 'factor', this.value)">
+        </div>
       </div>
-    </div>`).join('');
+    </div>`;
+  }).join('');
 }
+
+function actualizarUC(ref, campo, val) {
+  if (!UNIDADES_COMPRA[ref]) UNIDADES_COMPRA[ref] = {label:'Unidad', factor:null};
+  if (campo === 'label') {
+    UNIDADES_COMPRA[ref].label = val.trim() || 'Unidad';
+  } else {
+    const n = parseFloat(val);
+    UNIDADES_COMPRA[ref].factor = isNaN(n) || val.trim()==='' ? null : n;
+  }
+  // Save to localStorage
+  try {
+    const saved = JSON.parse(localStorage.getItem('thefactory_config')||'{}');
+    if (!saved.uc) saved.uc = {};
+    saved.uc[ref] = UNIDADES_COMPRA[ref];
+    localStorage.setItem('thefactory_config', JSON.stringify(saved));
+  } catch(e) {}
+  const t = document.getElementById('cfg-saved-toast');
+  if(t){t.style.opacity='1';setTimeout(()=>t.style.opacity='0',1200);}
+}
+
+
 
 function actualizarPrecio(ref, val) {
   const v = parseFloat(val);
@@ -2912,6 +3069,192 @@ function setupTextInput(el) {
   setupFracField(el);
 }
 
+
+// ── ANÁLISIS DE COSTOS ────────────────────────────────────────
+function calcCostoItem(it) {
+  const {arb, mdo, cadd}         = getCfgWI();
+  const {arb:arbSC, mdo:mdoSC, cadd:caddSC} = getCfgSC();
+  const {arb:arbVP, mdo:mdoVP, cadd:caddVP} = getCfgVP();
+  const usd = v => '$'+v.toFixed(2);
+
+  let mpWI=0, mpSC=0, moWI=0, moSC=0, arbWI$=0, arbSC$=0, pvWI=0, pvSC=0;
+
+  if (it.tipo === 'ws-glass' || it.tipo === 'ws-solid') {
+    // WI
+    const hs=it.ancho-2.5, gbu=hs-0.125;
+    const ops=Math.ceil(it.hojas/7), mdoAj=mdo+(ops-1)*1;
+    const tb=((it.alto-2)*2)+((ops*2)*4);
+    const gft=((gbu-0.125)/12)*(it.tamHoja/12)*it.hojas;
+    const ax=(gbu+0.875)*it.hojas, rb=it.alto*2;
+    const ws_v=(ax/it.hojas)*(it.hojas+2), sil=hs+(it.tamHoja*2)*it.hojas;
+    const m=MC[it.colorKey]||MC.white;
+    const mats = it.tipo==='ws-solid'
+      ? [{r:m.jf,q:it.alto},{r:m.h,q:hs},{r:m.s,q:hs},{r:m.jm,q:it.alto},
+         {r:'A-200',q:tb},{r:'MPW25',q:it.ancho*it.hojas},{r:'CIA-3215',q:ax},
+         {r:'MPW04',q:it.hojas*2},{r:'CIA-E067',q:it.hojas*2},{r:'MPW14',q:it.hojas*2},
+         {r:'MPW06',q:it.hojas*2},{r:'MPW07',q:ops},{r:'MPW09',q:ops},{r:'MPW10',q:8},
+         {r:'MPW16',q:rb},{r:'MPW11',q:ws_v},{r:'MPW12',q:rb},{r:'MPW15',q:ops},
+         {r:'MPW18',q:sil},{r:'MPW17',q:4}]
+      : [{r:m.jf,q:it.alto},{r:m.h,q:hs},{r:m.s,q:hs},{r:m.jm,q:it.alto},
+         {r:m.b,q:gbu*it.hojas},{r:'A-200',q:tb},{r:'MPW02',q:gft},{r:'CIA-3215',q:ax},
+         {r:'MPW04',q:it.hojas*2},{r:'CIA-E067',q:it.hojas*2},{r:'MPW14',q:it.hojas*2},
+         {r:'MPW06',q:it.hojas*2},{r:'MPW07',q:ops},{r:'MPW09',q:ops},{r:'MPW10',q:8},
+         {r:'MPW16',q:rb},{r:'MPW11',q:ws_v},{r:'MPW12',q:rb},{r:'MPW15',q:ops},
+         {r:'MPW18',q:sil},{r:'MPW17',q:4}];
+    mats.forEach(i=>{ mpWI += (PRECIOS[i.r]||0)*i.q; });
+    arbWI$ = mpWI * arb;
+    moWI   = mdoAj + cadd;
+    pvWI   = (mpWI*(1+arb)+mdoAj+cadd)*(1+it.margen);
+    // SC
+    const telaRef = getTelaRef(it.ancho);
+    const lat = (it.ancho*2)+(it.alto*2);
+    mpSC = lat*(PRECIOS['MPW19']||0.038396) + it.ancho*(PRECIOS['MPW20']||0.036706)
+         + it.alto*(PRECIOS[telaRef]||0.012667) + 4*(PRECIOS['MPW24']||0.07);
+    arbSC$ = mpSC * arbSC;
+    moSC   = mdoSC + caddSC;
+    pvSC   = (mpSC*(1+arbSC)+mdoSC+caddSC)*(1+it.margen);
+
+  } else if (it.tipo === 'vp') {
+    const qVP01=((it.alto-6)*2)+((it.ancho-6)*2), qVP02=((it.alto-6)*2)+(it.ancho*2);
+    mpWI = qVP01*(PRECIOS['VP01']||0.520833) + qVP02*(PRECIOS['VP02']||0.343750)
+         + (PRECIOS['VP03']||15) + (PRECIOS['VP04']||30)
+         + (PRECIOS['VP05']||3) + (PRECIOS['VP06']||1)
+         + qVP01*(PRECIOS['VP07']||0.104167);
+    arbWI$ = mpWI * arbVP;
+    moWI   = mdoVP + caddVP;
+    pvWI   = (mpWI*(1+arbVP)+mdoVP+caddVP)*(1+it.margen);
+
+  } else if (it.tipo === 'screen') {
+    const telaRef = getTelaRef(it.ancho);
+    const lat = (it.ancho*2)+(it.alto*2);
+    mpSC = lat*(PRECIOS['MPW19']||0.038396) + it.ancho*(PRECIOS['MPW20']||0.036706)
+         + it.alto*(PRECIOS[telaRef]||0.012667) + 4*(PRECIOS['MPW24']||0.07);
+    arbSC$ = mpSC * arbSC;
+    moSC   = mdoSC + caddSC;
+    pvSC   = (mpSC*(1+arbSC)+mdoSC+caddSC)*(1+it.margen);
+  }
+
+  const mp    = (mpWI + mpSC) * it.qty;
+  const arb$  = (arbWI$ + arbSC$) * it.qty;
+  const mo    = (moWI + moSC) * it.qty;
+  const cProd = (mp + arb$ + mo);
+  const pv    = it.total;
+  const util  = pv - cProd;
+
+  return { mp, arb$, mo, cProd, pv, util,
+    pvWI:pvWI*it.qty, pvSC:pvSC*it.qty };
+}
+
+function verAnalisis() {
+  if (!cotItems.length) { alert('La cotización está vacía.'); return; }
+  const wrap = document.getElementById('analisis-wrap');
+  const cont = document.getElementById('analisis-content');
+  if (!wrap || !cont) return;
+  const usd = v => '$'+v.toFixed(2);
+  let totMP=0,totArb=0,totMO=0,totProd=0,totPV=0,totUtil=0,totCom=0;
+
+  let html = '';
+  cotItems.forEach(it => {
+    const c = calcCostoItem(it);
+    const comVal = it.total - (it.unitarioBase||it.unitario)*it.qty;
+    const pvBase = it.total - comVal;
+    totMP   += c.mp;
+    totArb  += c.arb$;
+    totMO   += c.mo;
+    totProd += c.cProd;
+    totPV   += it.total;
+    totUtil += c.util;
+    totCom  += comVal;
+    const margenReal = c.pv>0?((c.util/c.pv)*100).toFixed(1):'0';
+
+    html += '<div class="card" style="margin-bottom:10px;border-left:3px solid var(--accent)">';
+    html += '<div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:10px">';
+    html += '<div><div style="font-weight:700;font-size:13px">'+it.tipoLabel+'</div>';
+    html += '<div style="font-size:11px;color:var(--muted)">'+it.color+' · '+toFrac(it.alto)+'×'+toFrac(it.ancho)+' · ×'+it.qty+'</div></div>';
+    html += '<div style="text-align:right"><div style="font-size:10px;color:var(--muted)">Margen real</div>';
+    html += '<div style="font-family:\'Syne\',sans-serif;font-weight:800;font-size:16px;color:var(--accent)">'+margenReal+'%</div></div></div>';
+    html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">';
+    html += '<div style="background:#f5f5f5;border-radius:6px;padding:8px"><div style="font-size:9px;font-weight:700;color:var(--muted);margin-bottom:2px">MAT. PRIMA</div><div style="font-family:\'Syne\',sans-serif;font-weight:700;font-size:14px">'+usd(c.mp)+'</div></div>';
+    html += '<div style="background:#f5f5f5;border-radius:6px;padding:8px"><div style="font-size:9px;font-weight:700;color:var(--muted);margin-bottom:2px">ARB + M.O.</div><div style="font-family:\'Syne\',sans-serif;font-weight:700;font-size:14px">'+usd(c.arb$+c.mo)+'</div></div>';
+    html += '<div style="background:#fff3ee;border-radius:6px;padding:8px"><div style="font-size:9px;font-weight:700;color:var(--muted);margin-bottom:2px">COSTO PROD.</div><div style="font-family:\'Syne\',sans-serif;font-weight:700;font-size:14px;color:var(--accent)">'+usd(c.cProd)+'</div></div>';
+    html += '<div style="background:#fff3ee;border-radius:6px;padding:8px"><div style="font-size:9px;font-weight:700;color:var(--muted);margin-bottom:2px">PRECIO BASE</div><div style="font-family:\'Syne\',sans-serif;font-weight:700;font-size:14px;color:var(--accent)">'+usd(pvBase)+'</div></div>';
+    if (it.comPct > 0) {
+      html += '<div style="background:#e8f0fe;border-radius:6px;padding:8px"><div style="font-size:9px;font-weight:700;color:#1a56db;margin-bottom:2px">COMISIÓN '+(it.comPct*100).toFixed(0)+'%</div><div style="font-family:\'Syne\',sans-serif;font-weight:700;font-size:14px;color:#1a56db">'+usd(comVal)+'</div></div>';
+      html += '<div style="background:#e3f2fd;border-radius:6px;padding:8px"><div style="font-size:9px;font-weight:700;color:#1a56db;margin-bottom:2px">PRECIO CLIENTE</div><div style="font-family:\'Syne\',sans-serif;font-weight:700;font-size:14px;color:#1a56db">'+usd(it.total)+'</div></div>';
+    } else {
+      html += '<div style="background:#fff3ee;border-radius:6px;padding:8px;grid-column:span 2"><div style="font-size:9px;font-weight:700;color:var(--muted);margin-bottom:2px">PRECIO CLIENTE</div><div style="font-family:\'Syne\',sans-serif;font-weight:700;font-size:14px;color:var(--accent)">'+usd(it.total)+'</div></div>';
+    }
+    const utilColor = c.util>=0?'#2a7a2a':'#cc0000';
+    const utilBg    = c.util>=0?'#e8f5e9':'#ffebee';
+    html += '<div style="background:'+utilBg+';border-radius:6px;padding:8px;grid-column:span 2"><div style="font-size:9px;font-weight:700;color:var(--muted);margin-bottom:2px">UTILIDAD NETA</div><div style="font-family:\'Syne\',sans-serif;font-weight:800;font-size:18px;color:'+utilColor+'">'+usd(c.util)+'</div></div>';
+    html += '</div></div>';
+  });
+
+  // Totals summary
+  const margenTotal = totPV>0?((totUtil/totPV)*100).toFixed(1):'0';
+  const totPVbase   = totPV - totCom;
+  html += '<div style="background:#1C1C1B;border-radius:12px;padding:16px;margin-top:4px">';
+  html += '<div style="color:#aaa;font-size:10px;font-weight:700;margin-bottom:12px">RESUMEN TOTAL COTIZACIÓN</div>';
+  html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">';
+  html += '<div><div style="font-size:9px;color:#888">Mat. Prima</div><div style="font-family:\'Syne\',sans-serif;font-weight:700;font-size:15px;color:#fff">'+usd(totMP)+'</div></div>';
+  html += '<div><div style="font-size:9px;color:#888">Arb + M.O.</div><div style="font-family:\'Syne\',sans-serif;font-weight:700;font-size:15px;color:#fff">'+usd(totArb+totMO)+'</div></div>';
+  html += '<div><div style="font-size:9px;color:#888">Costo Producción</div><div style="font-family:\'Syne\',sans-serif;font-weight:700;font-size:15px;color:var(--accent)">'+usd(totProd)+'</div></div>';
+  html += '<div><div style="font-size:9px;color:#888">Precio Base</div><div style="font-family:\'Syne\',sans-serif;font-weight:700;font-size:15px;color:var(--accent)">'+usd(totPVbase)+'</div></div>';
+  if (totCom > 0) {
+    html += '<div><div style="font-size:9px;color:#aaa">Comisión Vendedor</div><div style="font-family:\'Syne\',sans-serif;font-weight:700;font-size:15px;color:#90caf9">'+usd(totCom)+'</div></div>';
+    html += '<div><div style="font-size:9px;color:#aaa">Precio al Cliente</div><div style="font-family:\'Syne\',sans-serif;font-weight:700;font-size:15px;color:#90caf9">'+usd(totPV)+'</div></div>';
+  }
+  const utilTotColor = totUtil>=0?'#4CAF50':'#f44336';
+  html += '<div style="grid-column:span 2;border-top:1px solid #333;padding-top:10px">';
+  html += '<div style="font-size:9px;color:#888">Utilidad Total · Margen '+margenTotal+'%</div>';
+  html += '<div style="font-family:\'Syne\',sans-serif;font-weight:800;font-size:24px;color:'+utilTotColor+'">'+usd(totUtil)+'</div></div>';
+  html += '</div></div>';
+
+  cont.innerHTML = html;
+  wrap.style.display = 'block';
+  wrap.scrollIntoView({behavior:'smooth'});
+}
+
+
+
+// ── RECALCULAR COTIZACIÓN ─────────────────────────────────────
+function recalcularCotizacion() {
+  if (!cotItems.length) { alert('La cotización está vacía.'); return; }
+  const margen = (CFG.cotMargenDef==='ferreteria' ? CFG.margenFer : CFG.margenPub) / 100 || 0.5;
+  cotItems = cotItems.map(it => {
+    const unitarioBase = calcPrecioUnitario(
+      it.tipo, it.alto, it.ancho, it.hojas, it.tamHoja, it.colorKey, margen
+    );
+    const unitario = precioConComision(unitarioBase, it.tipo);
+    const comPct   = getComision(it.tipo);
+    return { ...it, margen, unitarioBase, unitario, comPct, total: unitario * it.qty };
+  });
+  renderCotizacion();
+  const btn = document.querySelector('[onclick="recalcularCotizacion()"]');
+  if (btn) {
+    const orig = btn.textContent;
+    btn.textContent = '✓ Recalculado';
+    btn.style.background = '#e8f5e9';
+    setTimeout(() => { btn.textContent = orig; btn.style.background = ''; }, 1500);
+  }
+}
+
+// ── COMISIÓN VENDEDOR ─────────────────────────────────────────
+function getComision(tipo) {
+  if (!CFG.com) return 0;
+  if (tipo === 'ws-glass') return (CFG.com.glass  || 0) / 100;
+  if (tipo === 'ws-solid') return (CFG.com.solid  || 0) / 100;
+  if (tipo === 'vp')       return (CFG.com.vp     || 0) / 100;
+  if (tipo === 'screen')   return (CFG.com.screen || 0) / 100;
+  return 0;
+}
+
+function precioConComision(precio, tipo) {
+  const com = getComision(tipo);
+  if (com <= 0) return precio;
+  return precio / (1 - com);  // precio sube para que tú recibas lo mismo
+}
+
 // ── TOGGLE COT OPTIONS BY TIPO ────────────────────────────────
 function toggleCotOpts(tipo) {
   const louverOpts = document.getElementById('cot-louver-opts');
@@ -2971,7 +3314,7 @@ function renderCotizacion() {
     sub+=it.total;
     return `<div class="cot-item">
       <div class="ci-info"><div class="ci-title">${it.tipoLabel}</div>
-      <div class="ci-sub">${it.color} · ${toFrac(it.alto)}×${toFrac(it.ancho)} · ${it.tamHoja}" · ${it.hojas}L · ×${it.qty}</div></div>
+      <div class="ci-sub">${it.color} · ${toFrac(it.alto)}×${toFrac(it.ancho)} · ${it.tamHoja}" · ${it.hojas}L · ×${it.qty}${it.comPct>0?` · <span style="color:#1a56db;font-weight:700">Com: ${(it.comPct*100).toFixed(0)}%</span>`:''}</div></div>
       <div class="ci-price"><div class="ci-unit">${usd(it.unitario)}/u</div><div class="ci-total">${usd(it.total)}</div></div>
       <button class="btn-del" onclick="delCotItem(${it.id})">✕</button>
     </div>`;
@@ -3012,18 +3355,48 @@ function limpiarHistorial() {
 // ── MOBILE DESPIECE ───────────────────────────────────────────
 function verDespiece() {
   if(!cotItems.length){alert('La cotización está vacía.');return;}
+
   const tots={};
-  cotItems.forEach(it=>{const m=calcMaterialesItem(it);Object.entries(m).forEach(([r,q])=>{tots[r]=(tots[r]||0)+q;});});
-  let totalMP=0;
-  const filas=Object.entries(tots).filter(([,q])=>q>0.001).sort(([a],[b])=>a.localeCompare(b))
-    .map(([ref,qty])=>{
-      const p=PRECIOS[ref]||0,costo=p*qty;totalMP+=costo;
-      const uc=UNIDADES_COMPRA[ref];
-      let pedir,uLabel;
-      if(uc&&uc.factor!==null){uLabel=uc.label;pedir=Math.ceil(qty/uc.factor);}
-      else{uLabel=uc?uc.label:'Unidad';pedir=Math.ceil(qty);}
-      return{ref,nombre:NOMBRES[ref]||ref,uLabel,pedir,qDisp:ref==='MPW02'?qty.toFixed(4)+' ft²':toFrac(qty),costo};
-    });
+  cotItems.forEach(it=>{
+    const m=calcMaterialesItem(it);
+    Object.entries(m).forEach(([r,q])=>{tots[r]=(tots[r]||0)+q;});
+  });
+
+  // Profile refs (perfiles de aluminio — IN units, sold by caja/perfil)
+  const PROFILE_REFS = ['CIA-3229','CIA-E207','CIA-3065','CIA-3371','CIA-3493',
+    'MPW34','MPW32','MPW33','MPW35','MPW31',
+    'MPW29','MPW27','MPW28','MPW30','MPW26',
+    'CIA-3215','A-200',
+    'MPW19','MPW20'];
+
+  let totalMP = 0;
+
+  const makeRow = ([ref, qty]) => {
+    const p = PRECIOS[ref]||0;
+    const isProfile = PROFILE_REFS.includes(ref);
+    // Add 10% to profiles
+    const qFinal = isProfile ? qty * 1.10 : qty;
+    const costo  = p * qFinal;
+    totalMP += costo;
+    const uc = UNIDADES_COMPRA[ref];
+    let pedir, uLabel;
+    if(uc && uc.factor !== null){ uLabel=uc.label; pedir=Math.ceil(qFinal/uc.factor); }
+    else { uLabel=uc?uc.label:'Unidad'; pedir=Math.ceil(qFinal); }
+    const qDisp = ref==='MPW02' ? qty.toFixed(4)+' ft²' : toFrac(qty) + (isProfile ? ' +10%' : '');
+    return {ref, nombre:NOMBRES[ref]||ref, uLabel, pedir, qDisp, costo, isProfile};
+  };
+
+  const entries = Object.entries(tots).filter(([,q])=>q>0.001);
+
+  // Sort: profiles first, then rest alphabetically
+  entries.sort(([a],[b]) => {
+    const aP = PROFILE_REFS.includes(a), bP = PROFILE_REFS.includes(b);
+    if(aP && !bP) return -1;
+    if(!aP && bP) return 1;
+    return a.localeCompare(b);
+  });
+
+  const filas = entries.map(makeRow);
 
   const ph   = document.getElementById('desp-placeholder');
   const list = document.getElementById('desp-list');
@@ -3037,15 +3410,35 @@ function verDespiece() {
   if(tots2) tots2.style.display='block';
   if(tot)   tot.textContent=`$${totalMP.toFixed(2)}`;
   if(pbtn)  pbtn.style.display='block';
+
   if(list){
     list.style.display='block';
-    list.innerHTML=filas.map(r=>`<div class="desp-row">
-      <div style="display:flex;justify-content:space-between;align-items:start">
-        <div><div class="dr-ref">${r.ref}</div><div class="dr-name">${r.nombre}</div></div>
-        <div style="text-align:right"><div class="dr-uc">${r.uLabel}</div><div class="dr-pedir">${r.pedir}</div></div>
-      </div>
-      <div class="dr-meta"><div class="dr-tecnica">${r.qDisp}</div><div class="dr-costo">$${r.costo.toFixed(2)}</div></div>
-    </div>`).join('');
+    list.innerHTML = filas.map(r=>`
+      <div class="desp-row" style="${r.isProfile ? 'border-left:3px solid #EC5F29;' : ''}">
+        <div style="display:flex;justify-content:space-between;align-items:start">
+          <div>
+            <div class="dr-ref">${r.ref}${r.isProfile ? ' <span style="font-size:9px;background:#fff3ee;color:#EC5F29;padding:1px 5px;border-radius:3px;font-weight:700">+10%</span>' : ''}</div>
+            <div class="dr-name">${r.nombre}</div>
+          </div>
+          <div style="text-align:right">
+            <div class="dr-uc">${r.uLabel}</div>
+            <div class="dr-pedir">${r.pedir}</div>
+          </div>
+        </div>
+        <div class="dr-meta">
+          <div class="dr-tecnica">${r.qDisp}</div>
+          <div style="display:flex;gap:12px;align-items:center">
+            <div style="text-align:right">
+              <div style="font-size:9px;color:var(--muted);font-weight:600">COSTO</div>
+              <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:16px;color:var(--text)">$${r.costo.toFixed(2)}</div>
+            </div>
+            ${r.isProfile ? `<div style="text-align:right">
+              <div style="font-size:9px;color:#1a56db;font-weight:600">+IMP 11.5%</div>
+              <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:16px;color:#1a56db">$${(r.costo*1.115).toFixed(2)}</div>
+            </div>` : ''}
+          </div>
+        </div>
+      </div>`).join('');
   }
   goTo('desp',document.querySelectorAll('.nav-btn')[3]);
 }
@@ -3064,6 +3457,12 @@ function initConfigUI() {
   s('cfg-vp-arb2').value     = CFG.vp.arb;
   s('cfg-vp-mdo2').value     = CFG.vp.mdo;
   s('cfg-vp-cadd2').value    = CFG.vp.cadd;
+  if (CFG.com) {
+    s('cfg-com-glass').value  = CFG.com.glass  || 0;
+    s('cfg-com-solid').value  = CFG.com.solid  || 0;
+    s('cfg-com-vp').value     = CFG.com.vp     || 0;
+    s('cfg-com-screen').value = CFG.com.screen || 0;
+  }
 }
 
 function guardarConfigUI() {
@@ -3081,6 +3480,11 @@ function guardarConfigUI() {
   CFG.vp.arb     = parseFloat(g('cfg-vp-arb2'))     || 11;
   CFG.vp.mdo     = parseFloat(g('cfg-vp-mdo2'))     || 65;
   CFG.vp.cadd    = parseFloat(g('cfg-vp-cadd2'))    || 1;
+  if (!CFG.com) CFG.com = {};
+  CFG.com.glass  = parseFloat(g('cfg-com-glass'))  || 0;
+  CFG.com.solid  = parseFloat(g('cfg-com-solid'))  || 0;
+  CFG.com.vp     = parseFloat(g('cfg-com-vp'))     || 0;
+  CFG.com.screen = parseFloat(g('cfg-com-screen')) || 0;
   // Save directly — bypass guardarConfig() which reads desktop IDs without suffix
   try { localStorage.setItem('thefactory_config', JSON.stringify(CFG)); } catch(e) {}
   syncConfigToTabs();
@@ -3152,7 +3556,10 @@ function calcularUnificado() {
   const pvWI=totalProd*(1+margen);
   const {arb:arbSC,mdo:mdoSC,cadd:caddSC}=getCfgSC();
   const pvSC=calcScreen(alto,ancho,margen,arbSC,mdoSC,caddSC);
-  const pv=pvWI+pvSC;
+  const pvBase=(pvWI+pvSC)+(color==='osj'?20:0);
+  const tipoKey = relleno==='solid' ? 'ws-solid' : 'ws-glass';
+  const pv=precioConComision(pvBase, tipoKey);
+  const comPct=getComision(tipoKey);
   const usd=v=>'$'+v.toFixed(2);
 
   const grid=document.getElementById('calc-grid');
@@ -3161,7 +3568,7 @@ function calcularUnificado() {
   // Main price card
   const c1=document.createElement('div');
   c1.className='scard hi';
-  c1.innerHTML='<div class="slbl">Precio de Venta (WI+SC)</div><div class="sval">'+usd(pv)+'</div><div class="ssub">'+(margen*100).toFixed(0)+'% margen</div>';
+  c1.innerHTML='<div class="slbl">Precio al Cliente</div><div class="sval">'+usd(pv)+'</div><div class="ssub">'+(margen*100).toFixed(0)+'% margen'+(comPct>0?' · Com: '+(comPct*100).toFixed(0)+'%':'')+'</div>';
   grid.appendChild(c1);
 
   // WI card
@@ -3175,6 +3582,19 @@ function calcularUnificado() {
   c3.className='scard';
   c3.innerHTML='<div class="slbl">Mosquitero (SC)</div><div class="sval" style="font-size:16px">'+usd(pvSC)+'</div><div class="ssub">screen</div>';
   grid.appendChild(c3);
+
+  if (comPct>0) {
+    const cCom=document.createElement('div');
+    cCom.className='scard';
+    cCom.style.borderLeft='3px solid #1a56db';
+    cCom.innerHTML='<div class="slbl" style="color:#1a56db">PRECIO BASE</div><div class="sval" style="font-size:16px;color:#1a56db">'+usd(pvBase)+'</div><div class="ssub">sin comisión</div>';
+    grid.appendChild(cCom);
+    const cCom2=document.createElement('div');
+    cCom2.className='scard';
+    cCom2.style.borderLeft='3px solid #1a56db';
+    cCom2.innerHTML='<div class="slbl" style="color:#1a56db">COMISIÓN '+(comPct*100).toFixed(0)+'%</div><div class="sval" style="font-size:16px;color:#1a56db">'+usd(pv-pvBase)+'</div><div class="ssub">vendedor</div>';
+    grid.appendChild(cCom2);
+  }
 
   // MP card
   const c4=document.createElement('div');
@@ -3225,8 +3645,22 @@ function calcularProyectante() {
   const pv=calcPrecioVP(alto,ancho,margen);
   const usd=v=>`$${v.toFixed(2)}`;
   const mats=calcMatVP(alto,ancho,1);
-  document.getElementById('calc-grid').innerHTML=`
-    <div class="scard hi"><div class="slbl">Precio de Venta</div><div class="sval">${usd(pv)}</div><div class="ssub">Proyectante ${toFrac(alto)}×${toFrac(ancho)}</div></div>`;
+  const vpGrid = document.getElementById('calc-grid');
+  vpGrid.innerHTML = '';
+  const vpC1 = document.createElement('div');
+  vpC1.className = 'scard hi';
+  vpC1.innerHTML = '<div class="slbl">Precio al Cliente</div><div class="sval">'+usd(pv)+'</div><div class="ssub">Proyectante '+toFrac(alto)+'×'+toFrac(ancho)+(comPctVP>0?' · Com: '+(comPctVP*100).toFixed(0)+'%':'')+'</div>';
+  vpGrid.appendChild(vpC1);
+  if (comPctVP>0) {
+    const vpC2=document.createElement('div'); vpC2.className='scard';
+    vpC2.style.borderLeft='3px solid #1a56db';
+    vpC2.innerHTML='<div class="slbl" style="color:#1a56db">PRECIO BASE</div><div class="sval" style="font-size:16px;color:#1a56db">'+usd(pvBase)+'</div>';
+    vpGrid.appendChild(vpC2);
+    const vpC3=document.createElement('div'); vpC3.className='scard';
+    vpC3.style.borderLeft='3px solid #1a56db';
+    vpC3.innerHTML='<div class="slbl" style="color:#1a56db">COMISIÓN '+(comPctVP*100).toFixed(0)+'%</div><div class="sval" style="font-size:16px;color:#1a56db">'+usd(pv-pvBase)+'</div>';
+    vpGrid.appendChild(vpC3);
+  }
   document.getElementById('calc-mp-badge').textContent='';
   document.getElementById('calc-tbody').innerHTML=Object.entries(mats).map(([r,q])=>`<tr>
     <td class="ref">${r}</td><td>${NOMBRES[r]||r}</td>
