@@ -147,9 +147,177 @@ hr{border:none;border-top:1px solid var(--border);margin:10px 0}
   }
 
 </style>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js">
+// ── FIREBASE CONFIG ───────────────────────────────────────────
+const firebaseConfig = {
+  apiKey: "AIzaSyA2DgoEgPbcLD1Wx8HQimo5oLTAuCPqGUo",
+  authDomain: "the-factory-calc.firebaseapp.com",
+  databaseURL: "https://the-factory-calc-default-rtdb.firebaseio.com",
+  projectId: "the-factory-calc",
+  storageBucket: "the-factory-calc.firebasestorage.app",
+  messagingSenderId: "413293999849",
+  appId: "1:413293999849:web:930e13688b7f6319fa6278"
+};
+
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db   = firebase.firestore();
+let currentUser = null;
+let userDocRef  = null;
+
+// ── AUTH ──────────────────────────────────────────────────────
+function loginConGoogle() {
+  const btn = document.getElementById('btn-google-login');
+  const status = document.getElementById('login-status');
+  btn.style.opacity = '0.7';
+  status.textContent = 'Conectando...';
+  const provider = new firebase.auth.GoogleAuthProvider();
+  auth.signInWithPopup(provider).catch(err => {
+    status.textContent = 'Error: ' + err.message;
+    btn.style.opacity = '1';
+  });
+}
+
+auth.onAuthStateChanged(async user => {
+  if (user) {
+    currentUser = user;
+    userDocRef  = db.collection('usuarios').doc(user.uid);
+    // Show app, hide login
+    document.getElementById('login-overlay').style.display = 'none';
+    document.getElementById('main-app').style.display = 'flex';
+    document.getElementById('main-app').style.flexDirection = 'column';
+    document.getElementById('main-app').style.height = '100vh';
+    // Load data from cloud
+    await cargarDesdeNube();
+  } else {
+    document.getElementById('login-overlay').style.display = 'flex';
+    document.getElementById('main-app').style.display = 'none';
+    // Set login logo
+    const logo = document.querySelector('.hdr img');
+    const loginLogo = document.getElementById('login-logo');
+    if (logo && loginLogo) loginLogo.src = logo.src;
+  }
+});
+
+// ── CLOUD SYNC ────────────────────────────────────────────────
+async function cargarDesdeNube() {
+  if (!userDocRef) return;
+  try {
+    const doc = await userDocRef.get();
+    if (doc.exists) {
+      const data = doc.data();
+      // Restore CFG
+      if (data.cfg) {
+        CFG = { ...CONFIG_DEFAULTS, ...data.cfg,
+          wi: {...CONFIG_DEFAULTS.wi, ...(data.cfg.wi||{})},
+          vp: {...CONFIG_DEFAULTS.vp, ...(data.cfg.vp||{})},
+          com: {...(data.cfg.com||{})},
+        };
+      }
+      // Restore custom prices
+      if (data.precios) Object.assign(PRECIOS, data.precios);
+      // Restore custom UC
+      if (data.uc) Object.assign(UNIDADES_COMPRA, data.uc);
+      // Restore historial
+      if (data.historial) {
+        try { localStorage.setItem('thefactory_cotizaciones', JSON.stringify(data.historial)); } catch(e){}
+      }
+      // Restore cotNum
+      if (data.cotNum) {
+        try { localStorage.setItem('thefactory_cot_num', String(data.cotNum)); } catch(e){}
+      }
+    }
+    // Apply loaded config to UI
+    initConfigUI();
+    syncConfigToTabs();
+    renderHistCot();
+    setTimeout(() => setPrecioTipo(CFG.cotMargenDef||'publico'), 100);
+    console.log('✓ Datos cargados desde la nube');
+  } catch(e) {
+    console.error('Error cargando desde nube:', e);
+    // Fallback to localStorage
+    cargarConfig();
+  }
+}
+
+async function guardarEnNube() {
+  if (!userDocRef) return;
+  try {
+    const historial = JSON.parse(localStorage.getItem('thefactory_cotizaciones')||'[]');
+    const cotNum    = parseInt(localStorage.getItem('thefactory_cot_num')||'0');
+    // Only save modified prices
+    const preciosCustom = {};
+    Object.entries(PRECIOS).forEach(([k,v]) => {
+      if (v !== (CONFIG_DEFAULTS.precios||{})[k]) preciosCustom[k] = v;
+    });
+    await userDocRef.set({
+      cfg:      CFG,
+      precios:  PRECIOS,
+      uc:       UNIDADES_COMPRA,
+      historial,
+      cotNum,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+    }, { merge: true });
+    console.log('✓ Guardado en la nube');
+  } catch(e) {
+    console.error('Error guardando en nube:', e);
+  }
+}
+
+// ── OVERRIDE guardarConfigUI TO ALSO SYNC TO CLOUD ───────────
+const _guardarConfigUI_orig = guardarConfigUI;
+function guardarConfigUI() {
+  _guardarConfigUI_orig();
+  guardarEnNube();
+}
+
+// ── OVERRIDE imprimirCotizacion TO SAVE HISTORIAL TO CLOUD ───
+const _imprimirCotizacion_orig = imprimirCotizacion;
+function imprimirCotizacion() {
+  _imprimirCotizacion_orig();
+  setTimeout(guardarEnNube, 500);
+}
+
+// ── OVERRIDE actualizarPrecio TO SYNC TO CLOUD ───────────────
+const _actualizarPrecio_orig = actualizarPrecio;
+function actualizarPrecio(ref, val) {
+  _actualizarPrecio_orig(ref, val);
+  guardarEnNube();
+}
+
+// ── OVERRIDE actualizarUC TO SYNC TO CLOUD ───────────────────
+const _actualizarUC_orig = actualizarUC;
+function actualizarUC(ref, campo, val) {
+  _actualizarUC_orig(ref, campo, val);
+  guardarEnNube();
+}
+
+// ── LOGOUT ────────────────────────────────────────────────────
+function cerrarSesion() {
+  auth.signOut();
+}
+
+</script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 </head>
 <body>
-<div class="app">
+
+<!-- LOGIN OVERLAY -->
+<div id="login-overlay" style="position:fixed;inset:0;background:#1C1C1B;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px">
+  <img id="login-logo" src="" style="height:80px;width:80px;object-fit:contain;border-radius:12px;margin-bottom:24px">
+  <div style="font-family:'Syne',sans-serif;font-weight:900;font-size:28px;color:#fff;margin-bottom:4px">The Factory</div>
+  <div style="font-size:13px;color:#666;margin-bottom:40px">windows & doors</div>
+  <button id="btn-google-login" onclick="loginConGoogle()" style="display:flex;align-items:center;gap:12px;background:#fff;color:#1C1C1B;font-family:'Syne',sans-serif;font-weight:700;font-size:15px;padding:14px 28px;border:none;border-radius:12px;cursor:pointer;width:100%;max-width:300px;justify-content:center">
+    <svg width="20" height="20" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.36-8.16 2.36-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+    Continuar con Google
+  </button>
+  <div id="login-status" style="margin-top:16px;font-size:12px;color:#555"></div>
+</div>
+
+<div class="app" id="main-app" style="display:none">
 
 <!-- HEADER -->
 <header class="hdr">
@@ -158,6 +326,7 @@ hr{border:none;border-top:1px solid var(--border);margin:10px 0}
   <div class="hdr-space"></div>
   <button id="hdr-pub" class="pbtn pub active" onclick="setPrecioTipo('publico')">PÚB</button>
   <button id="hdr-fer" class="pbtn fer"        onclick="setPrecioTipo('ferreteria')">FER</button>
+  <button onclick="cerrarSesion()" style="background:none;border:none;color:#444;font-size:18px;cursor:pointer;padding:4px" title="Cerrar sesión">⏻</button>
 </header>
 
 <div class="screens">
@@ -3672,7 +3841,8 @@ function calcularProyectante() {
 
 // ── INIT ─────────────────────────────────────────────────────
 window.addEventListener('DOMContentLoaded',()=>{
-  cargarConfig();
+  // Firebase handles config loading via onAuthStateChanged
+  // cargarConfig() called as fallback only
   calcAutoHojas();
   cotAutoHojas();
   renderHistCot();
