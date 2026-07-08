@@ -149,155 +149,28 @@ hr{border:none;border-top:1px solid var(--border);margin:10px 0}
 </style>
 
 <!-- Firebase -->
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js">
-// ── FIREBASE CONFIG ───────────────────────────────────────────
-const firebaseConfig = {
-  apiKey: "AIzaSyA2DgoEgPbcLD1Wx8HQimo5oLTAuCPqGUo",
-  authDomain: "the-factory-calc.firebaseapp.com",
-  databaseURL: "https://the-factory-calc-default-rtdb.firebaseio.com",
-  projectId: "the-factory-calc",
-  storageBucket: "the-factory-calc.firebasestorage.app",
-  messagingSenderId: "413293999849",
-  appId: "1:413293999849:web:930e13688b7f6319fa6278"
-};
-
-let auth, db, currentUser = null, userDocRef = null;
-
-// ── AUTH ──────────────────────────────────────────────────────
-function loginConGoogle() {
-  const btn = document.getElementById('btn-google-login');
-  const status = document.getElementById('login-status');
-  btn.style.opacity = '0.7';
-  status.textContent = 'Conectando...';
-  const provider = new firebase.auth.GoogleAuthProvider();
-  auth.signInWithPopup(provider).catch(err => {
-    status.textContent = 'Error: ' + err.message;
-    btn.style.opacity = '1';
-  });
-}
-
-async function handleAuthChange(user) {
-  if (user) {
-    currentUser = user;
-    userDocRef  = db.collection('usuarios').doc(user.uid);
-    // Show app, hide login
-    document.getElementById('login-overlay').style.display = 'none';
-    document.getElementById('main-app').style.display = 'flex';
-    document.getElementById('main-app').style.flexDirection = 'column';
-    document.getElementById('main-app').style.height = '100vh';
-    // Load data from cloud
-    await cargarDesdeNube();
-  } else {
-    document.getElementById('login-overlay').style.display = 'flex';
-    document.getElementById('main-app').style.display = 'none';
-    // Set login logo
-    const logo = document.querySelector('.hdr img');
-    const loginLogo = document.getElementById('login-logo');
-    if (logo && loginLogo) loginLogo.src = logo.src;
-  }
-});
-
-// ── CLOUD SYNC ────────────────────────────────────────────────
-async function cargarDesdeNube() {
-  if (!userDocRef) return;
-  try {
-    const doc = await userDocRef.get();
-    if (doc.exists) {
-      const data = doc.data();
-      // Restore CFG
-      if (data.cfg) {
-        CFG = { ...CONFIG_DEFAULTS, ...data.cfg,
-          wi: {...CONFIG_DEFAULTS.wi, ...(data.cfg.wi||{})},
-          vp: {...CONFIG_DEFAULTS.vp, ...(data.cfg.vp||{})},
-          com: {...(data.cfg.com||{})},
-        };
-      }
-      // Restore custom prices
-      if (data.precios) Object.assign(PRECIOS, data.precios);
-      // Restore custom UC
-      if (data.uc) Object.assign(UNIDADES_COMPRA, data.uc);
-      // Restore historial
-      if (data.historial) {
-        try { localStorage.setItem('thefactory_cotizaciones', JSON.stringify(data.historial)); } catch(e){}
-      }
-      // Restore cotNum
-      if (data.cotNum) {
-        try { localStorage.setItem('thefactory_cot_num', String(data.cotNum)); } catch(e){}
-      }
-    }
-    // Apply loaded config to UI
-    initConfigUI();
-    syncConfigToTabs();
-    renderHistCot();
-    setTimeout(() => setPrecioTipo(CFG.cotMargenDef||'publico'), 100);
-    console.log('✓ Datos cargados desde la nube');
-  } catch(e) {
-    console.error('Error cargando desde nube:', e);
-    // Fallback to localStorage
-    cargarConfig();
-  }
-}
-
-async function guardarEnNube() {
-  if (!userDocRef) return;
-  try {
-    const historial = JSON.parse(localStorage.getItem('thefactory_cotizaciones')||'[]');
-    const cotNum    = parseInt(localStorage.getItem('thefactory_cot_num')||'0');
-    // Only save modified prices
-    const preciosCustom = {};
-    Object.entries(PRECIOS).forEach(([k,v]) => {
-      if (v !== (CONFIG_DEFAULTS.precios||{})[k]) preciosCustom[k] = v;
-    });
-    await userDocRef.set({
-      cfg:      CFG,
-      precios:  PRECIOS,
-      uc:       UNIDADES_COMPRA,
-      historial,
-      cotNum,
-      updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
-    }, { merge: true });
-    console.log('✓ Guardado en la nube');
-  } catch(e) {
-    console.error('Error guardando en nube:', e);
-  }
-}
-
-// ── OVERRIDE guardarConfigUI TO ALSO SYNC TO CLOUD ───────────
-const _guardarConfigUI_orig = guardarConfigUI;
-function guardarConfigUI() {
-  _guardarConfigUI_orig();
-  guardarEnNube();
-}
-
-// ── OVERRIDE imprimirCotizacion TO SAVE HISTORIAL TO CLOUD ───
-const _imprimirCotizacion_orig = imprimirCotizacion;
-function imprimirCotizacion() {
-  _imprimirCotizacion_orig();
-  setTimeout(guardarEnNube, 500);
-}
-
-// ── OVERRIDE actualizarPrecio TO SYNC TO CLOUD ───────────────
-const _actualizarPrecio_orig = actualizarPrecio;
-function actualizarPrecio(ref, val) {
-  _actualizarPrecio_orig(ref, val);
-  guardarEnNube();
-}
-
-// ── OVERRIDE actualizarUC TO SYNC TO CLOUD ───────────────────
-const _actualizarUC_orig = actualizarUC;
-function actualizarUC(ref, campo, val) {
-  _actualizarUC_orig(ref, campo, val);
-  guardarEnNube();
-}
-
-// ── LOGOUT ────────────────────────────────────────────────────
-function cerrarSesion() {
-  auth.signOut();
-}
-
-</script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+
+<script>
+// ── FIREBASE GLOBAL FUNCTIONS (defined early so buttons can call them) ──
+function loginConGoogle() {
+  var btn = document.getElementById('btn-google-login');
+  var status = document.getElementById('login-status');
+  if (btn) btn.style.opacity = '0.7';
+  if (status) status.textContent = 'Conectando...';
+  var provider = new firebase.auth.GoogleAuthProvider();
+  firebase.auth().signInWithPopup(provider).catch(function(err) {
+    if (status) status.textContent = 'Error: ' + err.message;
+    if (btn) btn.style.opacity = '1';
+  });
+}
+function cerrarSesion() {
+  firebase.auth().signOut();
+}
+</script>
+
 </head>
 <body>
 
@@ -3852,14 +3725,151 @@ window.addEventListener('DOMContentLoaded',()=>{
 });
 
 </script>
+
+
 <script>
-  // Firebase init — runs after all scripts loaded
-  (function() {
-    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-    auth = firebase.auth();
-    db   = firebase.firestore();
-    auth.onAuthStateChanged(handleAuthChange);
-  })();
+
+// ── FIREBASE CONFIG ───────────────────────────────────────────
+const firebaseConfig = {
+  apiKey: "AIzaSyA2DgoEgPbcLD1Wx8HQimo5oLTAuCPqGUo",
+  authDomain: "the-factory-calc.firebaseapp.com",
+  databaseURL: "https://the-factory-calc-default-rtdb.firebaseio.com",
+  projectId: "the-factory-calc",
+  storageBucket: "the-factory-calc.firebasestorage.app",
+  messagingSenderId: "413293999849",
+  appId: "1:413293999849:web:930e13688b7f6319fa6278"
+};
+
+let auth, db, currentUser = null, userDocRef = null;
+
+// ── AUTH ──────────────────────────────────────────────────────
+// loginConGoogle defined in head script
+
+async function handleAuthChange(user) {
+  if (user) {
+    currentUser = user;
+    userDocRef  = db.collection('usuarios').doc(user.uid);
+    // Show app, hide login
+    document.getElementById('login-overlay').style.display = 'none';
+    document.getElementById('main-app').style.display = 'flex';
+    document.getElementById('main-app').style.flexDirection = 'column';
+    document.getElementById('main-app').style.height = '100vh';
+    // Load data from cloud
+    await cargarDesdeNube();
+  } else {
+    document.getElementById('login-overlay').style.display = 'flex';
+    document.getElementById('main-app').style.display = 'none';
+    // Set login logo
+    const logo = document.querySelector('.hdr img');
+    const loginLogo = document.getElementById('login-logo');
+    if (logo && loginLogo) loginLogo.src = logo.src;
+  }
+});
+
+// ── CLOUD SYNC ────────────────────────────────────────────────
+async function cargarDesdeNube() {
+  if (!userDocRef) return;
+  try {
+    const doc = await userDocRef.get();
+    if (doc.exists) {
+      const data = doc.data();
+      // Restore CFG
+      if (data.cfg) {
+        CFG = { ...CONFIG_DEFAULTS, ...data.cfg,
+          wi: {...CONFIG_DEFAULTS.wi, ...(data.cfg.wi||{})},
+          vp: {...CONFIG_DEFAULTS.vp, ...(data.cfg.vp||{})},
+          com: {...(data.cfg.com||{})},
+        };
+      }
+      // Restore custom prices
+      if (data.precios) Object.assign(PRECIOS, data.precios);
+      // Restore custom UC
+      if (data.uc) Object.assign(UNIDADES_COMPRA, data.uc);
+      // Restore historial
+      if (data.historial) {
+        try { localStorage.setItem('thefactory_cotizaciones', JSON.stringify(data.historial)); } catch(e){}
+      }
+      // Restore cotNum
+      if (data.cotNum) {
+        try { localStorage.setItem('thefactory_cot_num', String(data.cotNum)); } catch(e){}
+      }
+    }
+    // Apply loaded config to UI
+    initConfigUI();
+    syncConfigToTabs();
+    renderHistCot();
+    setTimeout(() => setPrecioTipo(CFG.cotMargenDef||'publico'), 100);
+    console.log('✓ Datos cargados desde la nube');
+  } catch(e) {
+    console.error('Error cargando desde nube:', e);
+    // Fallback to localStorage
+    cargarConfig();
+  }
+}
+
+async function guardarEnNube() {
+  if (!userDocRef) return;
+  try {
+    const historial = JSON.parse(localStorage.getItem('thefactory_cotizaciones')||'[]');
+    const cotNum    = parseInt(localStorage.getItem('thefactory_cot_num')||'0');
+    // Only save modified prices
+    const preciosCustom = {};
+    Object.entries(PRECIOS).forEach(([k,v]) => {
+      if (v !== (CONFIG_DEFAULTS.precios||{})[k]) preciosCustom[k] = v;
+    });
+    await userDocRef.set({
+      cfg:      CFG,
+      precios:  PRECIOS,
+      uc:       UNIDADES_COMPRA,
+      historial,
+      cotNum,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+    }, { merge: true });
+    console.log('✓ Guardado en la nube');
+  } catch(e) {
+    console.error('Error guardando en nube:', e);
+  }
+}
+
+// ── OVERRIDE guardarConfigUI TO ALSO SYNC TO CLOUD ───────────
+const _guardarConfigUI_orig = guardarConfigUI;
+function guardarConfigUI() {
+  _guardarConfigUI_orig();
+  guardarEnNube();
+}
+
+// ── OVERRIDE imprimirCotizacion TO SAVE HISTORIAL TO CLOUD ───
+const _imprimirCotizacion_orig = imprimirCotizacion;
+function imprimirCotizacion() {
+  _imprimirCotizacion_orig();
+  setTimeout(guardarEnNube, 500);
+}
+
+// ── OVERRIDE actualizarPrecio TO SYNC TO CLOUD ───────────────
+const _actualizarPrecio_orig = actualizarPrecio;
+function actualizarPrecio(ref, val) {
+  _actualizarPrecio_orig(ref, val);
+  guardarEnNube();
+}
+
+// ── OVERRIDE actualizarUC TO SYNC TO CLOUD ───────────────────
+const _actualizarUC_orig = actualizarUC;
+function actualizarUC(ref, campo, val) {
+  _actualizarUC_orig(ref, campo, val);
+  guardarEnNube();
+}
+
+// ── LOGOUT ────────────────────────────────────────────────────
+// cerrarSesion defined in head script
+
+
+// Init Firebase
+(function() {
+  if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+  auth = firebase.auth();
+  db   = firebase.firestore();
+  auth.onAuthStateChanged(handleAuthChange);
+})();
 </script>
 </body>
 </html>
