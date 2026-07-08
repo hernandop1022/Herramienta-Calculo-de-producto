@@ -2989,6 +2989,7 @@ function actualizarUC(ref, campo, val) {
   } catch(e) {}
   const t = document.getElementById('cfg-saved-toast');
   if(t){t.style.opacity='1';setTimeout(()=>t.style.opacity='0',1200);}
+  if (typeof guardarEnNube === 'function') guardarEnNube();
 }
 
 
@@ -3528,6 +3529,8 @@ function guardarConfigUI() {
   syncConfigToTabs();
   const t = document.getElementById('cfg-saved-toast');
   if (t) { t.style.opacity='1'; setTimeout(() => t.style.opacity='0', 1500); }
+  // Sync to cloud
+  if (typeof guardarEnNube === 'function') guardarEnNube();
 }
 
 // ── MOBILE TABLA PRODUCTO SELECTOR ────────────────────────────
@@ -3834,31 +3837,15 @@ async function guardarEnNube() {
 
 // ── OVERRIDE guardarConfigUI TO ALSO SYNC TO CLOUD ───────────
 const _guardarConfigUI_orig = guardarConfigUI;
-function guardarConfigUI() {
-  _guardarConfigUI_orig();
-  guardarEnNube();
-}
+// guardarConfigUI override removed — merged below
 
-// ── OVERRIDE imprimirCotizacion TO SAVE HISTORIAL TO CLOUD ───
-const _imprimirCotizacion_orig = imprimirCotizacion;
-function imprimirCotizacion() {
-  _imprimirCotizacion_orig();
-  setTimeout(guardarEnNube, 500);
-}
+// imprimirCotizacion syncs to cloud via renderHistCot override
 
 // ── OVERRIDE actualizarPrecio TO SYNC TO CLOUD ───────────────
-const _actualizarPrecio_orig = actualizarPrecio;
-function actualizarPrecio(ref, val) {
-  _actualizarPrecio_orig(ref, val);
-  guardarEnNube();
-}
+// actualizarPrecio override removed
 
 // ── OVERRIDE actualizarUC TO SYNC TO CLOUD ───────────────────
-const _actualizarUC_orig = actualizarUC;
-function actualizarUC(ref, campo, val) {
-  _actualizarUC_orig(ref, campo, val);
-  guardarEnNube();
-}
+// actualizarUC override removed
 
 // ── LOGOUT ────────────────────────────────────────────────────
 // cerrarSesion defined in head script
