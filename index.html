@@ -161,7 +161,7 @@ function loginConGoogle() {
   if (btn) btn.style.opacity = '0.7';
   if (status) status.textContent = 'Conectando...';
   var provider = new firebase.auth.GoogleAuthProvider();
-  firebase.auth().signInWithPopup(provider).catch(function(err) {
+  (auth || firebase.auth()).signInWithPopup(provider).catch(function(err) {
     if (status) status.textContent = 'Error: ' + err.message;
     if (btn) btn.style.opacity = '1';
   });
@@ -3771,7 +3771,7 @@ async function handleAuthChange(user) {
 }
 
 // ── CLOUD SYNC ────────────────────────────────────────────────
-async async function cargarDesdeNube() {
+async function cargarDesdeNube() {
   if (!userDocRef) return;
   try {
     const doc = await userDocRef.get();
@@ -3811,7 +3811,7 @@ async async function cargarDesdeNube() {
   }
 }
 
-async async function guardarEnNube() {
+async function guardarEnNube() {
   if (!userDocRef) {
     console.warn('guardarEnNube: userDocRef no disponible');
     return;
