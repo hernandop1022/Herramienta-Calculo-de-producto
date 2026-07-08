@@ -3771,7 +3771,7 @@ async function handleAuthChange(user) {
 }
 
 // ── CLOUD SYNC ────────────────────────────────────────────────
-async function cargarDesdeNube() {
+async async function cargarDesdeNube() {
   if (!userDocRef) return;
   try {
     const doc = await userDocRef.get();
@@ -3811,27 +3811,29 @@ async function cargarDesdeNube() {
   }
 }
 
-async function guardarEnNube() {
-  if (!userDocRef) return;
+async async function guardarEnNube() {
+  if (!userDocRef) {
+    console.warn('guardarEnNube: userDocRef no disponible');
+    return;
+  }
   try {
     const historial = JSON.parse(localStorage.getItem('thefactory_cotizaciones')||'[]');
     const cotNum    = parseInt(localStorage.getItem('thefactory_cot_num')||'0');
-    // Only save modified prices
-    const preciosCustom = {};
-    Object.entries(PRECIOS).forEach(([k,v]) => {
-      if (v !== (CONFIG_DEFAULTS.precios||{})[k]) preciosCustom[k] = v;
-    });
-    await userDocRef.set({
-      cfg:      CFG,
-      precios:  PRECIOS,
-      uc:       UNIDADES_COMPRA,
-      historial,
-      cotNum,
+    const payload = {
+      cfg:       CFG,
+      precios:   PRECIOS,
+      uc:        UNIDADES_COMPRA,
+      historial: historial,
+      cotNum:    cotNum,
       updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
-    }, { merge: true });
-    console.log('✓ Guardado en la nube');
+    };
+    await userDocRef.set(payload, { merge: true });
+    console.log('✓ Guardado en Firebase:', Object.keys(payload));
+    const t = document.getElementById('cfg-saved-toast');
+    if (t) { t.textContent='✓ Guardado en nube'; t.style.opacity='1'; setTimeout(()=>{ t.style.opacity='0'; t.textContent='✓ Guardado'; },2000); }
   } catch(e) {
-    console.error('Error guardando en nube:', e);
+    console.error('Error guardando en Firebase:', e);
+    alert('Error guardando en la nube: ' + e.message);
   }
 }
 
