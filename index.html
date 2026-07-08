@@ -3729,6 +3729,7 @@ window.addEventListener('DOMContentLoaded',()=>{
 
 <script>
 
+
 // ── FIREBASE CONFIG ───────────────────────────────────────────
 const firebaseConfig = {
   apiKey: "AIzaSyA2DgoEgPbcLD1Wx8HQimo5oLTAuCPqGUo",
@@ -3764,7 +3765,7 @@ async function handleAuthChange(user) {
     const loginLogo = document.getElementById('login-logo');
     if (logo && loginLogo) loginLogo.src = logo.src;
   }
-});
+}
 
 // ── CLOUD SYNC ────────────────────────────────────────────────
 async function cargarDesdeNube() {
@@ -3862,14 +3863,16 @@ function actualizarUC(ref, campo, val) {
 // ── LOGOUT ────────────────────────────────────────────────────
 // cerrarSesion defined in head script
 
-
-// Init Firebase
+// ── FIREBASE INIT ─────────────────────────────────────────────
 (function() {
-  if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+  if (!firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+  }
   auth = firebase.auth();
   db   = firebase.firestore();
   auth.onAuthStateChanged(handleAuthChange);
 })();
+
 </script>
 </body>
 </html>
