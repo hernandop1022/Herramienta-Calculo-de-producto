@@ -3530,7 +3530,7 @@ function guardarConfigUI() {
   const t = document.getElementById('cfg-saved-toast');
   if (t) { t.style.opacity='1'; setTimeout(() => t.style.opacity='0', 1500); }
   // Sync to cloud
-  if (typeof guardarEnNube === 'function') guardarEnNube();
+  if (typeof guardarEnNube === 'function') guardarEnNube().catch(e => console.error(e));
 }
 
 // ── MOBILE TABLA PRODUCTO SELECTOR ────────────────────────────
@@ -3772,68 +3772,87 @@ async function handleAuthChange(user) {
 
 // ── CLOUD SYNC ────────────────────────────────────────────────
 async function cargarDesdeNube() {
-  if (!userDocRef) return;
+  if (!userDocRef) { console.warn('cargarDesdeNube: sin userDocRef'); return; }
   try {
+    console.log('Cargando desde Firebase...');
     const doc = await userDocRef.get();
+    console.log('Documento existe:', doc.exists);
     if (doc.exists) {
       const data = doc.data();
+      console.log('Datos recibidos:', Object.keys(data));
       // Restore CFG
       if (data.cfg) {
-        CFG = { ...CONFIG_DEFAULTS, ...data.cfg,
-          wi: {...CONFIG_DEFAULTS.wi, ...(data.cfg.wi||{})},
-          vp: {...CONFIG_DEFAULTS.vp, ...(data.cfg.vp||{})},
-          com: {...(data.cfg.com||{})},
+        CFG = {
+          ...CONFIG_DEFAULTS,
+          ...data.cfg,
+          wi:  {...CONFIG_DEFAULTS.wi,  ...(data.cfg.wi  || {})},
+          vp:  {...CONFIG_DEFAULTS.vp,  ...(data.cfg.vp  || {})},
+          com: {...(CONFIG_DEFAULTS.com || {}), ...(data.cfg.com || {})},
         };
+        console.log('CFG restaurado — margenPub:', CFG.margenPub, 'margenFer:', CFG.margenFer);
       }
-      // Restore custom prices
-      if (data.precios) Object.assign(PRECIOS, data.precios);
-      // Restore custom UC
-      if (data.uc) Object.assign(UNIDADES_COMPRA, data.uc);
-      // Restore historial
+      if (data.precios) { Object.assign(PRECIOS, data.precios); console.log('Precios restaurados'); }
+      if (data.uc)      { Object.assign(UNIDADES_COMPRA, data.uc); console.log('UC restaurado'); }
       if (data.historial) {
         try { localStorage.setItem('thefactory_cotizaciones', JSON.stringify(data.historial)); } catch(e){}
       }
-      // Restore cotNum
       if (data.cotNum) {
         try { localStorage.setItem('thefactory_cot_num', String(data.cotNum)); } catch(e){}
       }
+    } else {
+      console.log('Documento vacío — primer uso, guardando defaults');
+      await guardarEnNube();
     }
-    // Apply loaded config to UI
+    // Apply to UI
     initConfigUI();
     syncConfigToTabs();
     renderHistCot();
-    setTimeout(() => setPrecioTipo(CFG.cotMargenDef||'publico'), 100);
-    console.log('✓ Datos cargados desde la nube');
+    setTimeout(() => setPrecioTipo(CFG.cotMargenDef || 'publico'), 100);
+    console.log('✓ UI actualizada con datos de Firebase');
   } catch(e) {
-    console.error('Error cargando desde nube:', e);
-    // Fallback to localStorage
-    cargarConfig();
+    console.error('Error cargando desde Firebase:', e.code, e.message);
+    cargarConfig(); // fallback
   }
 }
 
 async function guardarEnNube() {
-  if (!userDocRef) {
-    console.warn('guardarEnNube: userDocRef no disponible');
+  console.log('guardarEnNube llamado, userDocRef:', !!userDocRef, 'currentUser:', !!currentUser);
+  if (!currentUser || !userDocRef) {
+    console.warn('No hay usuario autenticado — no se puede guardar en nube');
     return;
   }
   try {
     const historial = JSON.parse(localStorage.getItem('thefactory_cotizaciones')||'[]');
     const cotNum    = parseInt(localStorage.getItem('thefactory_cot_num')||'0');
-    const payload = {
-      cfg:       CFG,
-      precios:   PRECIOS,
-      uc:        UNIDADES_COMPRA,
+    const payload   = {
+      cfg:       JSON.parse(JSON.stringify(CFG)),
+      precios:   JSON.parse(JSON.stringify(PRECIOS)),
+      uc:        JSON.parse(JSON.stringify(UNIDADES_COMPRA)),
       historial: historial,
       cotNum:    cotNum,
+      uid:       currentUser.uid,
+      email:     currentUser.email,
       updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
     };
+    console.log('Guardando payload con keys:', Object.keys(payload));
     await userDocRef.set(payload, { merge: true });
-    console.log('✓ Guardado en Firebase:', Object.keys(payload));
+    console.log('✓ Guardado exitosamente en Firebase');
     const t = document.getElementById('cfg-saved-toast');
-    if (t) { t.textContent='✓ Guardado en nube'; t.style.opacity='1'; setTimeout(()=>{ t.style.opacity='0'; t.textContent='✓ Guardado'; },2000); }
+    if (t) {
+      t.textContent = '✓ Guardado en nube';
+      t.style.opacity = '1';
+      setTimeout(() => { t.style.opacity='0'; t.textContent='✓ Guardado'; }, 2000);
+    }
   } catch(e) {
-    console.error('Error guardando en Firebase:', e);
-    alert('Error guardando en la nube: ' + e.message);
+    console.error('ERROR guardando en Firebase:', e.code, e.message);
+    const t = document.getElementById('cfg-saved-toast');
+    if (t) {
+      t.textContent = '✗ Error: ' + e.message;
+      t.style.background = '#ffebee';
+      t.style.color = '#cc0000';
+      t.style.opacity = '1';
+      setTimeout(() => { t.style.opacity='0'; t.style.background=''; t.style.color=''; t.textContent='✓ Guardado'; }, 4000);
+    }
   }
 }
 
